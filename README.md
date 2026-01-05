@@ -33,11 +33,12 @@ source .venv/bin/activate
 uv sync
 ```
 
-2. Build the sandbox image (the project uses `ubuntu.sandbox` by default):
+3. Build the sandbox image (the project uses `ubuntu.sandbox` by default):
 
 ```bash
 docker build -t ubuntu.sandbox .
 ```
+* Optional: you may specify general `ubuntu` container name or your own image using `SANDBOX_CONTAINER_IMAGE` env.
 
 4. Run the agent:
 
