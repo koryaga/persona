@@ -15,9 +15,9 @@ from typing import Dict, Any
 SANDBOX_CONTAINER_NAME_BASE = "sandbox"
 SANDBOX_CONTAINER_NAME = f"{SANDBOX_CONTAINER_NAME_BASE}-{os.getpid()}"
 
-OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'xiaomi/mimo-v2-flash:free')
+OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-4o')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
-OPENAI_API_BASE = os.getenv('OPENAI_API_BASE', 'https://openrouter.ai/api/v1')
+OPENAI_API_BASE = os.getenv('OPENAI_API_BASE', '')
 
 
 def run_cli_prompt(prompt: str) -> str:
@@ -51,10 +51,10 @@ def ensure_container():
     subprocess.run(cmd, capture_output=True, text=True, timeout=30)
 
 
-class OpenRouterJudge(Evaluator[str, str]):
-    """Custom evaluator using OpenRouter API for LLM-as-a-Judge."""
+class LLMJudge(Evaluator[str, str]):
+    """Custom evaluator using OpenAI-compatible API for LLM-as-a-Judge."""
 
-    def __init__(self, rubric: str, model: str = "xiaomi/mimo-v2-flash:free"):
+    def __init__(self, rubric: str, model: str = "gpt-4o"):
         self.rubric = rubric
         self.model = model
         self.api_base = OPENAI_API_BASE
@@ -77,8 +77,9 @@ Examples:
 """
 
         try:
+            url = f"{self.api_base}/chat/completions" if self.api_base else "https://api.openai.com/v1/chat/completions"
             response = httpx.post(
-                f"{self.api_base}/chat/completions",
+                url,
                 headers={"Authorization": f"Bearer {self.api_key}"},
                 json={
                     "model": self.model,
@@ -128,7 +129,7 @@ class TestAgentCLIExpectedOutput:
         assert found_process, f"Output should show processes. Got: {output[:300]}"
 
     def test_skill_creator_llm_judge(self):
-        """Verify skill-creator skill is available using LLM-as-a-Judge via OpenRouter."""
+        """Verify skill-creator skill is available using LLM-as-a-Judge."""
         prompt = "What skills do you have?"
         output = run_cli_prompt(prompt)
 
@@ -145,7 +146,7 @@ The response should mention 'skill-creator' as an available skill."""
         dataset = Dataset(
             cases=[case],
             evaluators=[
-                OpenRouterJudge(
+                LLMJudge(
                     rubric=rubric,
                     model=OPENAI_MODEL,
                 )
@@ -155,7 +156,7 @@ The response should mention 'skill-creator' as an available skill."""
         report = dataset.evaluate_sync(lambda p: output)
         case_result = report.cases[0]
         assertions = case_result.assertions
-        assert assertions.get("passed", False), f"OpenRouter Judge failed"
+        assert assertions.get("passed", False), f"LLM Judge failed"
 
     def test_help_command(self):
         """Verify help command returns helpful information."""
