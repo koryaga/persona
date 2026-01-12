@@ -52,6 +52,17 @@ cp .env.example .env
 docker build -t ubuntu.sandbox .
 ```
 
+## *Optional*. Specify [search API](https://github.com/koryaga/Persona/blob/main/instructions.md?plain=1#L22) in a _curl format_
+
+- Example for [tavily](https://www.tavily.com/):
+```bash
+   curl -X POST https://api.tavily.com/search -H 'Content-Type: application/json' -H 'Authorization: Bearer _TRAVILY_TOKEN_' -d '{
+    "query": "<QUERY>",
+    "include_answer": "advanced"
+    }'
+```
+Free duckduckgo API search is used by default.
+
 ## Usage
 
 ```bash
