@@ -12,57 +12,71 @@ Persona is a lightweight AI agent running from cli that:
 - Loads and exposes skill to the agent (see `--skills-dir`)
 - Exchanges files with the user via the folder (see `--mnt-dir`)
 
-## Quick start
+## Prerequisites
 
-Prerequisites: Docker and Python 3.13+.
+- Docker
+- Python 3.13+
+- uv package manager
 
-1. Set up environment:
-
-Below are defaults for [openrouter](https://openrouter.ai/). Any OPENAI compatible, including local ollama, is supported:
-```bash
-OPENAI_API_KEY=your-api-key
-OPENAI_API_BASE=https://openrouter.ai/api/v1
-OPENAI_MODEL=nex-agi/deepseek-v3.1-nex-n1:free
-```
-
-2. Create and activate the virtualenv:
+## Installation
 
 ```bash
-uv venv
-source .venv/bin/activate
+git clone <repo-url>
+cd persona
 uv sync
+source .venv/bin/activate
 ```
 
-3. Build the sandbox image (the project uses `ubuntu.sandbox` by default):
+## Configuration
+
+Copy `.env.example` to `.env` and configure:
+
+```bash
+cp .env.example .env
+# Edit .env with your API keys and settings
+```
+
+### Environment variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `OPENAI_MODEL` | Model to use | `cogito:14b` |
+| `OPENAI_API_KEY` | API key | `ollama` |
+| `OPENAI_API_BASE` | API base URL | `http://localhost:11434/v1` |
+| `SANDBOX_CONTAINER_IMAGE` | Docker image | `ubuntu.sandbox` |
+| `SANDBOX_CONTAINER_NAME` | Container name prefix | `sandbox` |
+
+## Build sandbox image
+
 ```bash
 docker build -t ubuntu.sandbox .
 ```
-Optionally you may specify general `ubuntu` container name or your own image using `SANDBOX_CONTAINER_IMAGE` env.
 
-4. *Optional*. Specify [search API](https://github.com/koryaga/Persona/blob/main/instructions.md?plain=1#L9) in a _curl format_
-- Example for [travily](https://www.tavily.com/):
+## Usage
+
 ```bash
-   curl -X POST https://api.tavily.com/search -H 'Content-Type: application/json' -H 'Authorization: Bearer _TRAVILY_TOKEN_' -d '{
-    "query": "<QUERY>",
-    "include_answer": "advanced"
-    }'
+persona [--mnt-dir PATH] [--skills-dir PATH] [--container-image IMAGE]
 ```
-Free duckduckgo API search is used by default.
 
-5. Run the agent:
+### Options
 
-Usage: `python3 main.py [--mnt-dir PATH] [--skills-dir PATH]`
+- `--mnt-dir`: Host directory to mount at `/mnt` inside sandbox (default: `mnt`)
+- `--skills-dir`: Host directory to mount at `/skills` inside sandbox (default: `skills`)
+- `--container-image`: Docker image to use for sandbox
 
-- `--mnt-dir`: Host directory to mount at `/mnt` inside the sandbox (default:  `mnt` folder in current directory). The directory is only mounted if it exists on the host.
-- `--skills-dir`: Host directory to mount at `/skills` inside the sandbox (default:  `skills` folder in current directory). The directory is only mounted if it exists on the host.
+### Examples
 
-Examples:
 ```bash
-# start with default  mounts (only mounted if dirs exist)
-python3 main.py
+# Run with default mounts
+persona
+
+# Custom mount directories
+persona --mnt-dir /home/user/project --skills-dir /home/user/persona/skills
+
+# Different Docker image
+persona --container-image my-custom-sandbox
 ```
-```bash
-# or specify custom absolute/relative host paths for mounts
-python3 main.py --mnt-dir /home/user/project/ --skills-dir /home/user/persona/skills
-python3 main.py --mnt-dir ./mnt --skills-dir ./skills
-```
+
+## Skills
+
+Persona supports [Anthropic-style skills](https://agentskills.io/home). Skills are loaded from the `--skills-dir` (default: `skills/`).

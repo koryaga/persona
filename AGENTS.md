@@ -2,27 +2,24 @@
 
 ## Project Overview
 
-This is a universal AI agent CLI tool (`devops-agent`) built with Pydantic-AI that supports Anthropic-style skills. It runs from CLI and uses Docker sandbox containers for safe command execution. The project uses Python 3.13+, uv for dependency management, and follows async-first patterns for I/O operations.
+This is a universal AI agent CLI tool (`persona`) built with Pydantic-AI that supports Anthropic-style skills. It runs from CLI and uses Docker sandbox containers for safe command execution. The project uses Python 3.13+, uv for dependency management, and follows async-first patterns for I/O operations.
 
 ## Setup Commands
 
-- Setup uv venv: `source .venv/bin/activate`
-- Use uv for Python module management: `uv add <package>` or `uv remove <package>`
 - Sync dependencies: `uv sync`
-- Use `python3` executable for running scripts
+- Activate venv: `source .venv/bin/activate`
+- Add Python package: `uv add <package>`
+- Remove Python package: `uv remove <package>`
 - Build sandbox image: `docker build -t ubuntu.sandbox .`
 
 ## Build/Lint/Test Commands
 
-- Run main application: `python3 main.py`
-- Run with custom mount dirs: `python3 main.py --mnt-dir ./mnt --skills-dir ./skills`
-- Syntax check all Python files: `find . -name "*.py" -exec python3 -m py_compile {} \;`
-- Run all tests in skills directory: `python3 -m unittest discover -s skills -p "*_test.py" -v`
-- Run specific test file: `python3 skills/pdf/scripts/check_bounding_boxes_test.py`
-- Run single test case: `python3 -m unittest skills.pdf.scripts.check_bounding_boxes_test.TestGetBoundingBoxMessages.test_no_intersections`
-- Run specific test class: `python3 -m unittest skills.pdf.scripts.check_bounding_boxes_test.TestGetBoundingBoxMessages`
-- Run CLI eval tests (E2E): `pytest tests/test_cli_eval.py -v`
-- Run specific CLI test: `pytest tests/test_cli_eval.py::TestAgentCLIExpectedOutput::test_skill_creator -v`
+- Run application: `persona` (after `uv sync && source .venv/bin/activate`)
+- Run with custom mounts: `persona --mnt-dir ./mnt --skills-dir ./skills`
+- Syntax check Python files: `find . -name "*.py" -exec python3 -m py_compile {} \;`
+- Run skill tests: `python3 -m unittest discover -s skills -p "*_test.py" -v`
+- Run E2E tests: `pytest tests/test_cli_eval.py -v`
+- Run specific E2E test: `pytest tests/test_cli_eval.py::TestAgentCLIExpectedOutput::test_skill_creator -v`
 - Add linting: `uv add ruff && ruff check .`
 - Add type checking: `uv add pyright && pyright .`
 
@@ -30,22 +27,25 @@ This is a universal AI agent CLI tool (`devops-agent`) built with Pydantic-AI th
 
 ```
 /Users/skoryaga/src/persona
-├── main.py                 # Entry point with agent, Docker integration, tools
-├── pyproject.toml          # Project metadata and dependencies
-├── AGENTS.md              # This file for agent instructions
-├── instructions.md         # System prompt for the agent
-├── skills/                # Skill definitions (Anthropic-style)
+├── src/persona/           # Package source
+│   ├── __init__.py       # Package with version
+│   ├── cli.py            # CLI entry point
+│   └── py.typed          # PEP 561 type marker
+├── pyproject.toml        # Project metadata and dependencies
+├── AGENTS.md             # This file for agent instructions
+├── instructions.md       # System prompt for the agent
+├── skills/               # Skill definitions (Anthropic-style)
 │   ├── analyzing-logs/
 │   ├── candidate-assessment/
-│   ├── pdf/               # PDF processing toolkit
+│   ├── pdf/
 │   ├── planning-with-files/
 │   └── skill-creator/
-├── mnt/                   # Default mount directory for user files
-├── .env                   # Environment variables (API keys, model settings)
-├── Dockerfile             # Sandbox container definition
-└── tests/                 # E2E tests with pydantic-evals
-    ├── conftest.py        # Pytest fixtures
-    └── test_cli_eval.py   # CLI evaluation tests
+├── mnt/                  # Default mount directory for user files
+├── .env.example          # Configuration template
+├── Dockerfile            # Sandbox container definition
+└── tests/                # E2E tests with pydantic-evals
+    ├── conftest.py       # Pytest fixtures
+    └── test_cli_eval.py  # CLI evaluation tests
 ```
 
 ## Code Style Guidelines

@@ -21,9 +21,9 @@ OPENAI_API_BASE = os.getenv('OPENAI_API_BASE', '')
 
 
 def run_cli_prompt(prompt: str) -> str:
-    """Run main.py CLI with a single prompt and capture the output."""
+    """Run persona CLI with a single prompt and capture the output."""
     result = subprocess.run(
-        ["python3", "main.py"],
+        ["python3", "-m", "persona.cli"],
         input=f"{prompt}\n/exit\n",
         capture_output=True,
         text=True,
