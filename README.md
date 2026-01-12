@@ -73,10 +73,9 @@ persona
 # Custom mount directories
 persona --mnt-dir /home/user/project --skills-dir /home/user/persona/skills
 
-# Different Docker image
-persona --container-image my-custom-sandbox
 ```
 
 ## Skills
 
 Persona supports [Anthropic-style skills](https://agentskills.io/home). Skills are loaded from the `--skills-dir` (default: `skills/`).
+- [*skill-creator*](https://github.com/anthropics/skills/tree/main/skills/skill-creator) skill  is provided OOB. 
