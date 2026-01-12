@@ -18,7 +18,8 @@ import tempfile
 load_dotenv('.env')
 
 SANDBOX_CONTAINER_IMAGE = os.getenv('SANDBOX_CONTAINER_IMAGE',"ubuntu.sandbox")
-SANDBOX_CONTAINER_NAME = os.getenv('SANDBOX_CONTAINER_NAME',"sandbox")
+SANDBOX_CONTAINER_NAME_BASE = os.getenv('SANDBOX_CONTAINER_NAME',"sandbox")
+SANDBOX_CONTAINER_NAME = f"{SANDBOX_CONTAINER_NAME_BASE}-{os.getpid()}"
 
 #os.environ['OTEL_EXPORTER_OTLP_ENDPOINT'] = 'http://localhost:4318'
 #logfire.configure(send_to_logfire=False)
@@ -206,39 +207,38 @@ async def load_skill(skill: str) -> str:
 def start_container(container_name: str, image_name: str, mnt_dir: str , skills_dir: str ) -> bool:
     """
     Start a Docker container with the specified parameters.
-    
+
     Args:
-        container_name (str): Name for the container
+        container_name (str): Name for the container (should include PID for uniqueness)
         image_name (str): Name of the Docker image to use
         mnt_dir (str): Path to mount directory (default: mnt)
         skills_dir (str): Path to skills directory (default: skills)
-        
+
     Returns:
         bool: True if container started successfully, False otherwise
     """
     try:
-        
         # Expand user and convert to absolute paths so Docker treats them as host directories
         mnt_dir = os.path.abspath(os.path.expanduser(mnt_dir))
         skills_dir = os.path.abspath(os.path.expanduser(skills_dir))
-        
+
         # Build the docker run command
         cmd = [
             "docker", "run", "-d", "--rm",
         ]
-        
+
         # Only add volume mounts if directories exist
         if os.path.isdir(mnt_dir):
             cmd.extend(["-v", f"{mnt_dir}:/mnt"])
         if os.path.isdir(skills_dir):
             cmd.extend(["-v", f"{skills_dir}:/skills"])
-        
+
         cmd.extend([
             "--name", container_name,
             image_name,
             "sleep", "infinity"
         ])
-        
+
         # Execute the command
         result = subprocess.run(
             cmd,
@@ -246,14 +246,14 @@ def start_container(container_name: str, image_name: str, mnt_dir: str , skills_
             text=True,
             timeout=30
         )
-        
+
         if result.returncode == 0:
             print(f"Container {container_name} started successfully with ID: {result.stdout.strip()}")
             return True
         else:
             print(f"Failed to start container {container_name}: {result.stderr}")
             return False
-            
+
     except subprocess.TimeoutExpired:
         print("Command timed out")
         return False
@@ -307,15 +307,15 @@ def stop_container(container_name: str) -> bool:
 
 async def main():
     print("[DEBUG] Starting main function")
-    
+
 
     # Start the container when the program starts
     if not start_container(SANDBOX_CONTAINER_NAME, SANDBOX_CONTAINER_IMAGE, mnt_dir, skills_dir ):
         return False
-    
+
     # Register cleanup function to stop container on exit
     atexit.register(stop_container, SANDBOX_CONTAINER_NAME)
-    
+
     async with agent:
         #print("[DEBUG] Running agent in CLI mode")
         await agent.to_cli(prog_name="PersonaAI")

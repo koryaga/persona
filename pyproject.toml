@@ -1,10 +1,20 @@
 [project]
 name = "devops-agent"
 version = "0.1.0"
-description = "Add your description here"
+description = "A universal AI agent that runs from CLI and supports Anthropic-style skills"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "aiofiles>=25.1.0",
     "pydantic-ai>=1.33.0",
 ]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pydantic-evals>=0.1.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
