@@ -19,12 +19,6 @@
   2. curl
   3. lynx
 
-## Search Capability
-- When discovery is needed, use the Search API via curl:
-curl -v https://api.duckduckgo.com/?format=json&q=<QUERY>
-
-- Use search results to identify relevant URLs, then fetch content using the adaptive strategy above.
-
 ## Output Constraints
 - DO NOT print huge amounts of text to stdout.
 - Summarize, truncate, or save large outputs instead.

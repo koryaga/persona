@@ -60,13 +60,29 @@ def get_instructions_path() -> Path:
 def load_config() -> None:
     """Load configuration from environment with priority order."""
     load_dotenv(override=True)
-    
+
     user_config = Path(os.path.expanduser('~/.persona/.env'))
     if user_config.exists():
         load_dotenv(user_config, override=True)
-    
+
     if Path('.env').exists():
         load_dotenv('.env', override=True)
+
+
+def get_sandbox_env_vars() -> dict[str, str]:
+    """Read allowed environment variables from .env.sandbox file."""
+    sandbox_env = Path('.env.sandbox')
+    if not sandbox_env.exists():
+        return {}
+
+    env_vars = {}
+    for line in sandbox_env.read_text().splitlines():
+        line = line.strip()
+        if line and not line.startswith('#') and '=' in line:
+            key, value = line.split('=', 1)
+            if key:
+                env_vars[key] = value
+    return env_vars
 
 
 def find_and_parse_skills(skills_dir: Path):
@@ -105,14 +121,17 @@ def find_and_parse_skills(skills_dir: Path):
     return '\n'.join(skills_xml)
 
 
-def start_container(container_name: str, image_name: str, mnt_dir: str, skills_dir: str) -> bool:
+def start_container(container_name: str, image_name: str, mnt_dir: str, skills_dir: str, env_file: str | None = None) -> bool:
     """Start a Docker container with the specified parameters."""
     try:
         mnt_dir = os.path.abspath(os.path.expanduser(mnt_dir))
         skills_dir = os.path.abspath(os.path.expanduser(skills_dir))
-        
+
         cmd = ["docker", "run", "-d", "--rm"]
-        
+
+        if env_file and os.path.isfile(env_file):
+            cmd.extend(["--env-file", env_file])
+
         if os.path.isdir(mnt_dir):
             cmd.extend(["-v", f"{mnt_dir}:/mnt"])
         if os.path.isdir(skills_dir):
@@ -330,7 +349,17 @@ async def _main():
     )
     container_name_base = os.getenv('SANDBOX_CONTAINER_NAME', "sandbox")
     container_name = f"{container_name_base}-{os.getpid()}"
-    
+
+    sandbox_env_file = None
+    sandbox_env_vars = get_sandbox_env_vars()
+    if sandbox_env_vars:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.env', delete=False, prefix='.sandbox_env_') as f:
+            for key, value in sandbox_env_vars.items():
+                f.write(f"{key}={value}\n")
+            sandbox_env_file = f.name
+        os.chmod(sandbox_env_file, 0o600)
+        atexit.register(os.unlink, sandbox_env_file)
+
     agent = create_agent(Path(skills_dir))
     run_cmd, save_text_file, load_skill = create_tools(container_name, Path(skills_dir))
     
@@ -338,7 +367,7 @@ async def _main():
     agent.tool_plain(save_text_file)
     agent.tool_plain(load_skill)
     
-    if not start_container(container_name, sandbox_image, args.mnt_dir, skills_dir):
+    if not start_container(container_name, sandbox_image, args.mnt_dir, skills_dir, sandbox_env_file):
         return False
     
     atexit.register(stop_container, container_name)

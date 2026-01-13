@@ -46,22 +46,22 @@ cp .env.example .env
 | `SANDBOX_CONTAINER_IMAGE` | Docker image | `ubuntu.sandbox` |
 | `SANDBOX_CONTAINER_NAME` | Container name prefix | `sandbox` |
 
+### Sandbox environment variables
+
+Create `.env.sandbox` to pass environment variables into the sandbox container. Variables set in this file will be available inside the Docker container for skills to use.
+
+Example `.env.sandbox`:
+```bash
+TRAVILY_TOKEN=your-tavily-api-token
+```
+
+The `web-search` skill uses Tavily API when `TRAVILY_TOKEN` is set. Without the token, it defaults to DuckDuckGo.
+
 ## Build sandbox image
 
 ```bash
 docker build -t ubuntu.sandbox .
 ```
-
-## *Optional*. Specify [search API](https://github.com/koryaga/persona/blob/main/instructions.md?plain=1#L22) in a _curl format_
-
-- Example for [tavily](https://www.tavily.com/):
-```bash
-   curl -X POST https://api.tavily.com/search -H 'Content-Type: application/json' -H 'Authorization: Bearer _TRAVILY_TOKEN_' -d '{
-    "query": "<QUERY>",
-    "include_answer": "advanced"
-    }'
-```
-Free duckduckgo API search is used by default.
 
 ## Usage
 
@@ -89,4 +89,7 @@ persona --mnt-dir /home/user/project --skills-dir /home/user/persona/skills
 ## Skills
 
 Persona supports [Anthropic-style skills](https://agentskills.io/home). Skills are loaded from the `--skills-dir` (default: `skills/`).
-- [*skill-creator*](https://github.com/anthropics/skills/tree/main/skills/skill-creator) skill  is provided OOB. 
+
+Provided OOB:
+- [*skill-creator*](https://github.com/anthropics/skills/tree/main/skills/skill-creator)
+- [*web-search*](./skills/web-search/SKILL.md) - Web search with DuckDuckGo (default) or Tavily (when `TRAVILY_TOKEN` set in `.env.sandbox`) 
