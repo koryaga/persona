@@ -2,6 +2,7 @@
 import argparse
 import asyncio
 import atexit
+import datetime
 import glob
 import importlib.resources as resources
 import os
@@ -11,6 +12,7 @@ import sys
 import tempfile
 from pathlib import Path
 from typing import Optional
+
 
 import aiofiles
 from dotenv import load_dotenv
@@ -227,18 +229,32 @@ def create_agent(skills_dir: Path, model_settings: Optional[dict] = None):
             settings=ModelSettings(temperature=0, top_p=0),
         )
     
+    def get_instructions() -> str:
+        return (
+            f"{system_prompt}"
+            f"Current date and time: {datetime.datetime.now().isoformat()}"
+            """ When users ask you to perform tasks, check if any of the available skills below can help complete the task more effectively.
+
+            <skills_instructions>
+            How to use skills:
+            - Invoke skills using this tool with the skill name only: `load_skill` <skill_name>
+            - When you invoke a skill, you will see `Reading: <skill_name>`
+            - The skill's prompt will expand and provide detailed instructions
+            - Base directory provided in output for resolving bundled resources
+
+            Usage notes:
+            - Only use skills listed in <available_skills> below
+            - Do not invoke a skill that is already loaded in your context
+            </skills_instructions>"""
+            "<available_skills>"
+            f"{find_and_parse_skills(skills_dir)}"
+            "</available_skills>"
+        )
+    
     agent = Agent(
         model,
         retries=5,
-        instructions=(
-            "Enable deep thinking subroutine. "
-            f"""
-            {system_prompt}
-            <available_skills>
-            {find_and_parse_skills(skills_dir)}
-            </available_skills>
-            """
-        )
+        instructions=get_instructions,
     )
     
     return agent

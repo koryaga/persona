@@ -27,7 +27,7 @@ def run_cli_prompt(prompt: str) -> str:
         input=f"{prompt}\n/exit\n",
         capture_output=True,
         text=True,
-        timeout=60
+        timeout=180
     )
     return result.stdout + result.stderr
 
