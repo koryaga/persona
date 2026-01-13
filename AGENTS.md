@@ -73,8 +73,8 @@ This is a universal AI agent CLI tool (`persona`) built with Pydantic-AI that su
 - Use type hints for function parameters and return values
 - Use `async def` for functions that perform async I/O operations
 - Use Pydantic models for structured data when appropriate
-- Prefer `Union[X, Y]` over `X | Y` for Python 3.12 compatibility
-- Use `Optional[X]` rather than `X | None`
+- Prefer `X | Y` union syntax (Python 3.10+)
+- Use `X | None` rather than `Optional[X]`
 - Use `Literal` for enum-like string constants
 - Use `TypedDict` or Pydantic models for complex dictionary structures
 

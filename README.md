@@ -21,7 +21,7 @@ Persona is a lightweight AI agent running from cli that:
 ## Installation
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/koryaga/persona.git
 cd persona
 uv sync
 source .venv/bin/activate
@@ -52,7 +52,7 @@ cp .env.example .env
 docker build -t ubuntu.sandbox .
 ```
 
-## *Optional*. Specify [search API](https://github.com/koryaga/Persona/blob/main/instructions.md?plain=1#L22) in a _curl format_
+## *Optional*. Specify [search API](https://github.com/koryaga/persona/blob/main/instructions.md?plain=1#L22) in a _curl format_
 
 - Example for [tavily](https://www.tavily.com/):
 ```bash
