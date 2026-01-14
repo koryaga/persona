@@ -65,7 +65,7 @@ docker build -t ubuntu.sandbox .
 ## Usage
 
 ```bash
-persona [--mnt-dir PATH] [--skills-dir PATH] [--container-image IMAGE]
+persona [--mnt-dir PATH] [--skills-dir PATH]
 ```
 
 ### Options
@@ -80,7 +80,10 @@ persona [--mnt-dir PATH] [--skills-dir PATH] [--container-image IMAGE]
 # Run with default mounts
 persona
 
-# Custom mount directories
+# Custom user directory
+persona --mnt-dir /home/user/project
+
+# Custom user directory and skill folder 
 persona --mnt-dir /home/user/project --skills-dir /home/user/persona/skills
 
 ```
