@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Persona is a lightweight AI agent running from cli that:
+Persona is a simple AI agent running from cli that:
 - performs general user tasks, like document processing, internet search and data manipulation
 - supports [Anthropic skills](https://agentskills.io/home) to satisfy user requests
 
@@ -43,8 +43,7 @@ cp .env.example .env
 | `OPENAI_MODEL` | Model to use | `cogito:14b` |
 | `OPENAI_API_KEY` | API key | `ollama` |
 | `OPENAI_API_BASE` | API base URL | `http://localhost:11434/v1` |
-| `SANDBOX_CONTAINER_IMAGE` | Docker image | `ubuntu.sandbox` |
-| `SANDBOX_CONTAINER_NAME` | Container name prefix | `sandbox` |
+
 
 ### Sandbox environment variables
 
@@ -91,5 +90,5 @@ persona --mnt-dir /home/user/project --skills-dir /home/user/persona/skills
 Persona supports [Anthropic-style skills](https://agentskills.io/home). Skills are loaded from the `--skills-dir` (default: `skills/`).
 
 Provided OOB:
-- [*skill-creator*](https://github.com/anthropics/skills/tree/main/skills/skill-creator)
-- [*web-search*](./skills/web-search/SKILL.md) - Web search with DuckDuckGo (default) or Tavily (when `TRAVILY_TOKEN` set in `.env.sandbox`) 
+- [*skill-creator*](https://github.com/anthropics/skills/tree/main/skills/skill-creator) - This skill should be used when users want to create a new skill or update an existing one
+- [*web-search*](./skills/web-search/SKILL.md) - Web search skill with DuckDuckGo (default) or Tavily (when `TRAVILY_TOKEN` set in `.env.sandbox`) 
