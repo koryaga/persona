@@ -73,7 +73,7 @@ def load_config() -> None:
 
 def get_sandbox_env_vars() -> dict[str, str]:
     """Read allowed environment variables from .env.sandbox file."""
-    sandbox_env = Path('.env.sandbox')
+    sandbox_env = Path(__file__).parent.parent.parent / '.env.sandbox'
     if not sandbox_env.exists():
         return {}
 
