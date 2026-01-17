@@ -98,4 +98,6 @@ Persona supports [Anthropic-style skills](https://agentskills.io/home). Skills a
 
 Provided OOB:
 - [*skill-creator*](https://github.com/anthropics/skills/tree/main/skills/skill-creator) - This skill should be used when users want to create a new skill or update an existing one
-- [*web-search*](./skills/web-search/SKILL.md) - Web search skill with DuckDuckGo (default) or Tavily (when `TRAVILY_TOKEN` set in `.env.sandbox`) 
+- [*web-search*](./skills/web-search/SKILL.md) - Web search skill with DuckDuckGo (default) or Tavily (when `TRAVILY_TOKEN` set in `.env.sandbox`)
+
+More skills on [Agent Skills Marketplace](https://skillsmp.com/)
