@@ -123,7 +123,7 @@ def find_and_parse_skills(skills_dir: Path):
     return '\n'.join(skills_xml)
 
 
-def start_container(container_name: str, image_name: str, mnt_dir: str, skills_dir: str, env_file: str | None = None) -> bool:
+def start_container(container_name: str, image_name: str, mnt_dir: str, skills_dir: str, env_file: str | None = None, no_mnt: bool = False) -> bool:
     """Start a Docker container with the specified parameters."""
     try:
         mnt_dir = os.path.abspath(os.path.expanduser(mnt_dir))
@@ -134,7 +134,7 @@ def start_container(container_name: str, image_name: str, mnt_dir: str, skills_d
         if env_file and os.path.isfile(env_file):
             cmd.extend(["--env-file", env_file])
 
-        if os.path.isdir(mnt_dir):
+        if not no_mnt and os.path.isdir(mnt_dir):
             cmd.extend(["-v", f"{mnt_dir}:/mnt"])
         if os.path.isdir(skills_dir):
             cmd.extend(["-v", f"{skills_dir}:/skills"])
@@ -265,7 +265,7 @@ def create_tools(container_name: str, skills_dir: Path):
     
     async def run_cmd(cmd: str) -> str:
         """Run a command in Ubuntu and return the combined output."""
-        print(f"\033[91m[DEBUG][INPUT]{cmd}\033[0m")
+        print(f"\033[38;5;208m[CMD] {cmd}\033[0m")
         try:
             result = subprocess.run(
                 ["docker", "exec", container_name, "bash", "-c", cmd],
@@ -288,7 +288,7 @@ def create_tools(container_name: str, skills_dir: Path):
     
     async def save_text_file(filename: str, file_body: str) -> bool:
         """Write a text file/python code/shell script to /tmp/{filename}."""
-        print(f"\033[94m[DEBUG][FILE] {filename}\033[0m")
+        print(f"\033[94m[FILE] {filename}\033[0m")
         
         try:
             with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as tmp:
@@ -314,7 +314,7 @@ def create_tools(container_name: str, skills_dir: Path):
     
     async def load_skill(skill: str) -> str:
         """Load skill file SKILL.md into the context."""
-        print(f"\033[93m[DEBUG][SKILL] {skill}\033[0m")
+        print(f"\033[93m[SKILL] {skill}\033[0m")
         
         async with aiofiles.open(skills_dir / skill / "SKILL.md", "r") as f:
             content = await f.read()
@@ -341,7 +341,14 @@ async def _main():
         "--mnt-dir",
         dest="mnt_dir",
         help="Local directory to mount into container at /mnt",
-        default="mnt"
+        default="."
+    )
+    parser.add_argument(
+        "--no-mnt",
+        dest="no_mnt",
+        action="store_true",
+        help="Don't mount any host directory at /mnt",
+        default=False
     )
     parser.add_argument(
         "--skills-dir",
@@ -383,7 +390,7 @@ async def _main():
     agent.tool_plain(save_text_file)
     agent.tool_plain(load_skill)
     
-    if not start_container(container_name, sandbox_image, args.mnt_dir, skills_dir, sandbox_env_file):
+    if not start_container(container_name, sandbox_image, args.mnt_dir, skills_dir, sandbox_env_file, args.no_mnt):
         return False
     
     atexit.register(stop_container, container_name)

@@ -15,7 +15,7 @@ This is a universal AI agent CLI tool (`persona`) built with Pydantic-AI that su
 ## Build/Lint/Test Commands
 
 - Run application: `persona` (after `uv sync && source .venv/bin/activate`)
-- Run with custom mounts: `persona --mnt-dir ./mnt --skills-dir ./skills`
+- Run with custom skills dir: `persona --skills-dir ./skills`
 - Syntax check Python files: `find . -name "*.py" -exec python3 -m py_compile {} \;`
 - Run skill tests: `python3 -m unittest discover -s skills -p "*_test.py" -v`
 - Run E2E tests: `pytest tests/test_cli_eval.py -v`

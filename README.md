@@ -70,15 +70,19 @@ persona [--mnt-dir PATH] [--skills-dir PATH]
 
 ### Options
 
-- `--mnt-dir`: Host directory to mount at `/mnt` inside sandbox (default: `mnt`)
+- `--mnt-dir`: Host directory to mount inside sandbox (default: `.`)
+- `--no-mnt`: Don't mount any host directory at `/mnt`
 - `--skills-dir`: Host directory to mount at `/skills` inside sandbox (default: `skills`)
 - `--container-image`: Docker image to use for sandbox
 
 ### Examples
 
 ```bash
-# Run with default mounts
+# Run with default mounts (current directory)
 persona
+
+# No mount at all
+persona --no-mnt
 
 # Custom user directory
 persona --mnt-dir /home/user/project
