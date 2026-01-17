@@ -23,6 +23,10 @@ from pydantic_ai.providers.openai import OpenAIProvider
 from persona import __version__
 
 
+def is_debug() -> bool:
+    return os.getenv('DEBUG', '').lower() in ('true', '1', 'yes')
+
+
 def get_skills_dir() -> Path:
     """Find skills directory - bundled in package or from project root."""
     if getattr(sys, 'frozen', False):
@@ -153,17 +157,21 @@ def start_container(container_name: str, image_name: str, mnt_dir: str, skills_d
         )
         
         if result.returncode == 0:
-            print(f"Container {container_name} started successfully with ID: {result.stdout.strip()}")
+            if is_debug():
+                print(f"Container {container_name} started successfully with ID: {result.stdout.strip()}")
             return True
         else:
-            print(f"Failed to start container {container_name}: {result.stderr}")
+            if is_debug():
+                print(f"Failed to start container {container_name}: {result.stderr}")
             return False
     
     except subprocess.TimeoutExpired:
-        print("Command timed out")
+        if is_debug():
+            print("Command timed out")
         return False
     except Exception as e:
-        print(f"Error starting container: {str(e)}")
+        if is_debug():
+            print(f"Error starting container: {str(e)}")
         return False
 
 
@@ -186,17 +194,21 @@ def stop_container(container_name: str) -> bool:
             )
             
             if stop_result.returncode == 0:
-                print(f"Container {container_name} stopped successfully")
+                if is_debug():
+                    print(f"Container {container_name} stopped successfully")
                 return True
             else:
-                print(f"Failed to stop container {container_name}: {stop_result.stderr}")
+                if is_debug():
+                    print(f"Failed to stop container {container_name}: {stop_result.stderr}")
                 return False
         else:
-            print(f"Container {container_name} not found or not running")
+            if is_debug():
+                print(f"Container {container_name} not found or not running")
             return True
     
     except Exception as e:
-        print(f"Error stopping container: {str(e)}")
+        if is_debug():
+            print(f"Error stopping container: {str(e)}")
         return False
 
 
