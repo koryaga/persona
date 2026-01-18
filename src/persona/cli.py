@@ -15,6 +15,7 @@ from typing import Optional
 
 
 import aiofiles
+import logfire
 from dotenv import load_dotenv
 from pydantic_ai import Agent, ModelSettings
 from pydantic_ai.models.openai import OpenAIChatModel
@@ -25,6 +26,14 @@ from persona import __version__
 
 def is_debug() -> bool:
     return os.getenv('DEBUG', '').lower() in ('true', '1', 'yes')
+
+
+def configure_logfire() -> None:
+    """Configure logfire for debug mode instrumentation."""
+    if is_debug():
+        logfire.configure(send_to_logfire=False)
+        logfire.instrument_pydantic_ai()
+        logfire.instrument_httpx(capture_all=True)
 
 
 def get_skills_dir() -> Path:
@@ -343,6 +352,7 @@ def create_tools(container_name: str, skills_dir: Path):
 async def _main():
     """Main entry point for the persona CLI."""
     load_config()
+    configure_logfire()
     
     parser = argparse.ArgumentParser(
         prog="persona",

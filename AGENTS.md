@@ -26,6 +26,14 @@ This is a universal AI agent CLI tool (`persona`) built with Pydantic-AI that su
 - Add linting: `uv add ruff && ruff check .`
 - Add type checking: `uv add pyright && pyright .`
 
+### Debug Mode
+
+When `DEBUG=true`, logfire instruments:
+- Pydantic-AI operations
+- All HTTPX requests (`capture_all=True`)
+
+Optional: Set `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` for local observability (e.g., Grafana Tempo, Jaeger)
+
 ## Project Structure
 
 ```

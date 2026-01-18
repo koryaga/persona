@@ -1525,6 +1525,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },
+    { name = "logfire" },
     { name = "pydantic-ai" },
     { name = "python-dotenv" },
 ]
@@ -1539,6 +1540,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "aiofiles", specifier = ">=25.1.0" },
+    { name = "logfire", specifier = ">=2.0.0" },
     { name = "pydantic-ai", specifier = ">=1.33.0" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
 ]
