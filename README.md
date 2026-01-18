@@ -102,5 +102,6 @@ Provided OOB:
 - [*skill-creator*](https://github.com/anthropics/skills/tree/main/skills/skill-creator) - Create new skills or update existing ones
 - [*web-search*](./skills/web-search/SKILL.md) - Web search with DuckDuckGo (default) or Tavily (with `TRAVILY_TOKEN`). Get Tavily token at: https://app.tavily.com/home
 - [*skillsmp-search*](./skills/skillsmp-search/SKILL.md) - Search AI skills from SkillsMP marketplace (requires `SKILLSMP_API_KEY` in `.env.sandbox`). Get API key at: https://skillsmp.com/docs/api
+- [*planning-with-files*](./skills/planning-with-files/SKILL.md) - Manus-style persistent markdown file planning for complex multi-step tasks
 
 More skills on [Agent Skills Marketplace](https://skillsmp.com/)
