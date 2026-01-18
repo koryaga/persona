@@ -97,7 +97,8 @@ persona --mnt-dir /home/user/project --skills-dir /home/user/persona/skills
 Persona supports [Anthropic-style skills](https://agentskills.io/home). Skills are loaded from the `--skills-dir` (default: `skills/`).
 
 Provided OOB:
-- [*skill-creator*](https://github.com/anthropics/skills/tree/main/skills/skill-creator) - This skill should be used when users want to create a new skill or update an existing one
-- [*web-search*](./skills/web-search/SKILL.md) - Web search skill with DuckDuckGo (default) or Tavily (when `TRAVILY_TOKEN` set in `.env.sandbox`)
+- [*skill-creator*](https://github.com/anthropics/skills/tree/main/skills/skill-creator) - Create new skills or update existing ones
+- [*web-search*](./skills/web-search/SKILL.md) - Web search with DuckDuckGo (default) or Tavily (with `TRAVILY_TOKEN`)
+- [*skillsmp-search*](./skills/skillsmp-search/SKILL.md) - Search and discover AI skills from the SkillsMP marketplace
 
 More skills on [Agent Skills Marketplace](https://skillsmp.com/)
