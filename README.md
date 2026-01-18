@@ -52,9 +52,11 @@ Create `.env.sandbox` to pass environment variables into the sandbox container. 
 Example `.env.sandbox`:
 ```bash
 TRAVILY_TOKEN=your-tavily-api-token
+SKILLSMP_API_KEY=your-skillsmp-api-key
 ```
 
 The `web-search` skill uses Tavily API when `TRAVILY_TOKEN` is set. Without the token, it defaults to DuckDuckGo.
+The `skillsmp-search` skill uses SkillsMP API when `SKILLSMP_API_KEY` is set.
 
 ## Build sandbox image
 
@@ -92,13 +94,13 @@ persona --mnt-dir /home/user/project --skills-dir /home/user/persona/skills
 
 ```
 
-## Skills
+## Skills {#skills}
 
 Persona supports [Anthropic-style skills](https://agentskills.io/home). Skills are loaded from the `--skills-dir` (default: `skills/`).
 
 Provided OOB:
 - [*skill-creator*](https://github.com/anthropics/skills/tree/main/skills/skill-creator) - Create new skills or update existing ones
-- [*web-search*](./skills/web-search/SKILL.md) - Web search with DuckDuckGo (default) or Tavily (with `TRAVILY_TOKEN`)
-- [*skillsmp-search*](./skills/skillsmp-search/SKILL.md) - Search and discover AI skills from the SkillsMP marketplace
+- [*web-search*](./skills/web-search/SKILL.md) - Web search with DuckDuckGo (default) or Tavily (with `TRAVILY_TOKEN`). Get Tavily token at: https://app.tavily.com/home
+- [*skillsmp-search*](./skills/skillsmp-search/SKILL.md) - Search AI skills from SkillsMP marketplace (requires `SKILLSMP_API_KEY` in `.env.sandbox`). Get API key at: https://skillsmp.com/docs/api
 
 More skills on [Agent Skills Marketplace](https://skillsmp.com/)
