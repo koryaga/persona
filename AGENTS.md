@@ -16,10 +16,13 @@ This is a universal AI agent CLI tool (`persona`) built with Pydantic-AI that su
 
 - Run application: `persona` (after `uv sync && source .venv/bin/activate`)
 - Run with custom skills dir: `persona --skills-dir ./skills`
+- Run without mounting host directory: `persona --no-mnt`
+- Run with custom mount directory: `persona --mnt-dir /path/to/dir`
 - Syntax check Python files: `find . -name "*.py" -exec python3 -m py_compile {} \;`
 - Run skill tests: `python3 -m unittest discover -s skills -p "*_test.py" -v`
 - Run E2E tests: `pytest tests/test_cli_eval.py -v`
 - Run specific E2E test: `pytest tests/test_cli_eval.py::TestAgentCLIExpectedOutput::test_skill_creator -v`
+- Enable DEBUG mode: `DEBUG=true persona ...`
 - Add linting: `uv add ruff && ruff check .`
 - Add type checking: `uv add pyright && pyright .`
 
@@ -39,9 +42,13 @@ This is a universal AI agent CLI tool (`persona`) built with Pydantic-AI that su
 │   ├── candidate-assessment/
 │   ├── pdf/
 │   ├── planning-with-files/
-│   └── skill-creator/
+│   ├── skill-creator/
+│   ├── skillsmp-search/
+│   └── web-search/
 ├── mnt/                  # Default mount directory for user files
+│   └── .gitignore        # Git ignore for mount directory
 ├── .env.example          # Configuration template
+├── .env.sandbox.example  # Sandbox environment variables template
 ├── Dockerfile            # Sandbox container definition
 └── tests/                # E2E tests with pydantic-evals
     ├── conftest.py       # Pytest fixtures
@@ -116,6 +123,9 @@ This is a universal AI agent CLI tool (`persona`) built with Pydantic-AI that su
 - Set reasonable timeouts on all container operations (30s default)
 - Handle Docker daemon not running gracefully with helpful error messages
 - Use `docker exec` for running commands inside the sandbox container
+- Enable DEBUG mode for container lifecycle messages: `DEBUG=true persona ...`
+- Default mount directory is current directory (`.`); use `--no-mnt` to disable mounting
+- Sandbox environment variables can be set in `.env.sandbox` file
 
 ### Project-Specific Patterns
 
@@ -126,6 +136,8 @@ This is a universal AI agent CLI tool (`persona`) built with Pydantic-AI that su
 - Use `tempfile` module for secure temporary file handling
 - Agent tools should be async and return strings or structured data
 - Skills are defined in `skills/{skill_name}/SKILL.md` with YAML frontmatter
+- Skills can include `examples.md` and `reference.md` for detailed documentation
+- Some skills include helper scripts in `scripts/` directory and API references in `references/`
 
 ### General
 
