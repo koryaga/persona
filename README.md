@@ -55,8 +55,7 @@ TRAVILY_TOKEN=your-tavily-api-token
 SKILLSMP_API_KEY=your-skillsmp-api-key
 ```
 
-The `web-search` skill uses Tavily API when `TRAVILY_TOKEN` is set. Without the token, it defaults to DuckDuckGo.
-The `skillsmp-search` skill uses SkillsMP API when `SKILLSMP_API_KEY` is set.
+[More configuration info](#skills) 
 
 ## Build sandbox image
 
@@ -94,7 +93,7 @@ persona --mnt-dir /home/user/project --skills-dir /home/user/persona/skills
 
 ```
 
-## Skills {#skills}
+## Skills
 
 Persona supports [Anthropic-style skills](https://agentskills.io/home). Skills are loaded from the `--skills-dir` (default: `skills/`).
 
