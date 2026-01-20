@@ -7,6 +7,7 @@ import glob
 import importlib.resources as resources
 import os
 import re
+import signal
 import subprocess
 import sys
 import tempfile
@@ -26,6 +27,13 @@ from persona import __version__
 
 def is_debug() -> bool:
     return os.getenv('DEBUG', '').lower() in ('true', '1', 'yes')
+
+
+def _signal_handler(signum, frame):
+    """Handle termination signals to ensure clean container shutdown."""
+    if 'container_name' in globals() and container_name:
+        stop_container(container_name)
+    sys.exit(0)
 
 
 def configure_logfire() -> None:
@@ -397,6 +405,9 @@ async def _main():
     )
     container_name_base = os.getenv('SANDBOX_CONTAINER_NAME', "sandbox")
     container_name = f"{container_name_base}-{os.getpid()}"
+
+    signal.signal(signal.SIGTERM, _signal_handler)
+    signal.signal(signal.SIGINT, _signal_handler)
 
     sandbox_env_file = None
     sandbox_env_vars = get_sandbox_env_vars()
