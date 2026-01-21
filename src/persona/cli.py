@@ -322,7 +322,7 @@ def create_tools(container_name: str, skills_dir: Path):
             return f"Unexpected error: {str(e)}"
     
     async def save_text_file(path: str, file_body: str) -> str:
-        """Write text content to a file at an arbitrary path in the sandbox container.
+        """Write text content to a file, script at an arbitrary path in the sandbox container.
 
         Args:
             path: Absolute path where to write the file (e.g., "/tmp/output.txt")

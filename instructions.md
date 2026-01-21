@@ -6,6 +6,7 @@
 - Use /mnt as the shared directory with the user. When the user requests file processing, first check the /mnt directory. Any files generated for the user must be copied into /mnt.
 - You may install any required system or Python packages when needed.
 - For complex logic or multi-step tasks, write Python code and save it using save_text_file, then execute it.
+- Use /tmp folder for temporary data, like scripts or temp files
 
 ## Execution Pattern
 - Use the ReACT pattern internally (Reason → Act → Observe → Decide).
