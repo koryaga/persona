@@ -321,36 +321,28 @@ def create_tools(container_name: str, skills_dir: Path):
         except Exception as e:
             return f"Unexpected error: {str(e)}"
     
-    async def save_text_file(filename: str, file_body: str) -> bool:
-        """Write a text file, Python code, or shell script to /tmp in the sandbox.
+    async def save_text_file(path: str, file_body: str) -> str:
+        """Write text content to a file at an arbitrary path in the sandbox container.
 
         Args:
-            filename: Name of the file to create (e.g., "script.py", "utils.sh", "config.json")
-            file_body: The complete content to write to the file
+            path: Absolute path where to write the file (e.g., "/home/user/script.py", "/mnt/output.txt")
+            file_body: Complete content to write to the file
         """
-        print(f"\033[94m[FILE] {filename}\033[0m")
+        print(f"\033[94m[FILE] {path}\033[0m")
         
-        try:
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as tmp:
-                tmp.write(file_body)
-                tmp_path = tmp.name
-            
-            result = subprocess.run(
-                ["docker", "cp", tmp_path, f"{container_name}:/tmp/{filename}"],
-                capture_output=True,
-                text=True,
-                timeout=10
-            )
-            
-            if result.returncode != 0:
-                print(f"\033[91m[ERROR] Failed to copy {filename}: {result.stderr}\033[0m")
-                return False
-            
-            os.unlink(tmp_path)
-            return True
-        except Exception as e:
-            print(f"\033[91m[ERROR] {str(e)}\033[0m")
-            return False
+        cmd = f"cat > '{path}' << 'EOF'\n{file_body}\nEOF"
+        
+        result = subprocess.run(
+            ["docker", "exec", container_name, "bash", "-c", cmd],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        
+        if result.returncode == 0:
+            return f"Successfully wrote {len(file_body)} bytes to {path}"
+        else:
+            return f"Error writing file: {result.stderr}"
     
     async def load_skill(skill: str) -> str:
         """Load a skill definition into the agent's context.
