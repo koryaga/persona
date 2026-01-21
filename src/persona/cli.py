@@ -325,7 +325,7 @@ def create_tools(container_name: str, skills_dir: Path):
         """Write text content to a file at an arbitrary path in the sandbox container.
 
         Args:
-            path: Absolute path where to write the file (e.g., "/home/user/script.py", "/mnt/output.txt")
+            path: Absolute path where to write the file (e.g., "/tmp/output.txt")
             file_body: Complete content to write to the file
         """
         print(f"\033[94m[FILE] {path}\033[0m")
