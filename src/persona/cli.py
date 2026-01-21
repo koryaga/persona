@@ -82,7 +82,7 @@ def get_instructions_path() -> Path:
 
 def load_config() -> None:
     """Load configuration from environment with priority order."""
-    load_dotenv(override=True)
+    load_dotenv(override=False)
 
     user_config = Path(os.path.expanduser('~/.persona/.env'))
     if user_config.exists():
