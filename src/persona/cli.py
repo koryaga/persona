@@ -14,7 +14,6 @@ import tempfile
 from pathlib import Path
 from typing import Optional
 
-
 import aiofiles
 import logfire
 from dotenv import load_dotenv
@@ -294,9 +293,13 @@ def create_agent(skills_dir: Path, model_settings: Optional[dict] = None):
 
 def create_tools(container_name: str, skills_dir: Path):
     """Create agent tools with proper closure over container_name and skills_dir."""
-    
+
     async def run_cmd(cmd: str) -> str:
-        """Run a command in Ubuntu and return the combined output."""
+        """Execute a bash command in the Ubuntu sandbox container.
+
+        Args:
+            cmd: The bash command to execute (e.g., "ls -la")
+        """
         print(f"\033[38;5;208m[CMD] {cmd}\033[0m")
         try:
             result = subprocess.run(
@@ -319,7 +322,12 @@ def create_tools(container_name: str, skills_dir: Path):
             return f"Unexpected error: {str(e)}"
     
     async def save_text_file(filename: str, file_body: str) -> bool:
-        """Write a text file/python code/shell script to /tmp/{filename}."""
+        """Write a text file, Python code, or shell script to /tmp in the sandbox.
+
+        Args:
+            filename: Name of the file to create (e.g., "script.py", "utils.sh", "config.json")
+            file_body: The complete content to write to the file
+        """
         print(f"\033[94m[FILE] {filename}\033[0m")
         
         try:
@@ -345,7 +353,11 @@ def create_tools(container_name: str, skills_dir: Path):
             return False
     
     async def load_skill(skill: str) -> str:
-        """Load skill file SKILL.md into the context."""
+        """Load a skill definition into the agent's context.
+
+        Args:
+            skill: Name of the skill directory to load (e.g. "web-search", "skill-creator")
+        """
         print(f"\033[93m[SKILL] {skill}\033[0m")
         
         async with aiofiles.open(skills_dir / skill / "SKILL.md", "r") as f:
