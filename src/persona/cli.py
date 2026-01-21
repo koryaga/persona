@@ -330,19 +330,26 @@ def create_tools(container_name: str, skills_dir: Path):
         """
         print(f"\033[94m[FILE] {path}\033[0m")
         
-        cmd = f"cat > '{path}' << 'EOF'\n{file_body}\nEOF"
-        
-        result = subprocess.run(
-            ["docker", "exec", container_name, "bash", "-c", cmd],
-            capture_output=True,
-            text=True,
-            timeout=10
-        )
-        
-        if result.returncode == 0:
-            return f"Successfully wrote {len(file_body)} bytes to {path}"
-        else:
-            return f"Error writing file: {result.stderr}"
+        try:
+            with tempfile.NamedTemporaryFile(mode='w', suffix='', delete=False) as tmp:
+                tmp.write(file_body)
+                tmp_path = tmp.name
+            
+            result = subprocess.run(
+                ["docker", "cp", tmp_path, f"{container_name}:{path}"],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+            
+            os.unlink(tmp_path)
+            
+            if result.returncode == 0:
+                return f"Successfully wrote {len(file_body)} bytes to {path}"
+            else:
+                return f"Error writing file: {result.stderr}"
+        except Exception as e:
+            return f"Error writing file: {str(e)}"
     
     async def load_skill(skill: str) -> str:
         """Load a skill definition into the agent's context.
