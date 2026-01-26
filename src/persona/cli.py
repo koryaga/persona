@@ -85,10 +85,10 @@ def load_config() -> None:
 
     user_config = Path(os.path.expanduser('~/.persona/.env'))
     if user_config.exists():
-        load_dotenv(user_config, override=True)
+        load_dotenv(user_config, override=False)
 
     if Path('.env').exists():
-        load_dotenv('.env', override=True)
+        load_dotenv('.env', override=False)
 
 
 def get_sandbox_env_vars() -> dict[str, str]:
@@ -266,20 +266,19 @@ def create_agent(skills_dir: Path, model_settings: Optional[dict] = None):
             f"Current date and time: {datetime.datetime.now().isoformat()}"
             """ When users ask you to perform tasks, check if any of the available skills below can help complete the task more effectively.
 
-            <skills_instructions>
             How to use skills:
-            - Invoke skills using this tool with the skill name only: `load_skill` <skill_name>
+            - Invoke skills using `load_skill` tool with the skill name only: load_skill <skill_name>
             - When you invoke a skill, you will see `Reading: <skill_name>`
             - The skill's prompt will expand and provide detailed instructions
             - Base directory provided in output for resolving bundled resources
 
             Usage notes:
-            - Only use skills listed in <available_skills> below
+            - Only use skills listed in Available_skills section below
             - Do not invoke a skill that is already loaded in your context
-            </skills_instructions>"""
-            "<available_skills>"
+            """
+            "Available_skills:"
             f"{find_and_parse_skills(skills_dir)}"
-            "</available_skills>"
+            ""
         )
     
     agent = Agent(
