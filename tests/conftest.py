@@ -5,11 +5,6 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-os.environ.setdefault('SANDBOX_CONTAINER_IMAGE', 'ubuntu.sandbox')
-os.environ.setdefault('OPENAI_MODEL', 'cogito:14b')
-os.environ.setdefault('OPENAI_API_KEY', 'ollama')
-os.environ.setdefault('OPENAI_API_BASE', 'http://localhost:11434/v1')
-
 SANDBOX_CONTAINER_NAME_BASE = os.environ.get('SANDBOX_CONTAINER_NAME', 'sandbox')
 SANDBOX_CONTAINER_NAME = f"{SANDBOX_CONTAINER_NAME_BASE}-{os.getpid()}"
 
@@ -27,7 +22,8 @@ def ensure_container():
         print(f"[SETUP] Container {SANDBOX_CONTAINER_NAME} already running")
         return
 
-    cmd = ["docker", "run", "-d", "--rm", "--name", SANDBOX_CONTAINER_NAME, "ubuntu.sandbox", "sleep", "infinity"]
+    container_image = os.getenv('SANDBOX_CONTAINER_IMAGE', 'ubuntu.sandbox')
+    cmd = ["docker", "run", "-d", "--rm", "--name", SANDBOX_CONTAINER_NAME, container_image, "sleep", "infinity"]
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
     if result.returncode == 0:
         print(f"[SETUP] Container {SANDBOX_CONTAINER_NAME} started")
