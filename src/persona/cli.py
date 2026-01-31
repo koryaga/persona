@@ -405,6 +405,18 @@ async def _main():
         help="Docker image to use for sandbox",
         default=None
     )
+    parser.add_argument(
+        "-p", "--prompt",
+        dest="prompt",
+        help="Single prompt to execute (non-interactive mode)",
+        default=None
+    )
+    parser.add_argument(
+        "prompt",
+        nargs="?",
+        help="Single prompt to execute (non-interactive mode)",
+        default=None
+    )
     args, remaining = parser.parse_known_args()
     
     skills_dir = args.skills_dir if args.skills_dir else str(get_skills_dir())
@@ -441,8 +453,12 @@ async def _main():
     
     atexit.register(stop_container, container_name)
     
-    async with agent:
-        await agent.to_cli(prog_name="persona")
+    if args.prompt:
+        result = await agent.run(args.prompt)
+        print(result.output)
+    else:
+        async with agent:
+            await agent.to_cli(prog_name="persona")
     
     return True
 
