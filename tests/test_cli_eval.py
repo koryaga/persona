@@ -9,7 +9,21 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import httpx
 from pydantic_evals import Case, Dataset
 from pydantic_evals.evaluators import Contains, Evaluator, EvaluatorContext
-from typing import Dict, Any
+from typing import Dict, Any, Optional, List
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SRC_PATH = os.path.join(PROJECT_ROOT, 'src')
+PYTHONPATH = os.environ.get('PYTHONPATH', '') + f":{SRC_PATH}"
+VENV_PYTHON = os.path.join(PROJECT_ROOT, '.venv', 'bin', 'python')
+USE_VENV_PYTHON = os.path.exists(VENV_PYTHON)
+PYTHON_EXEC = VENV_PYTHON if USE_VENV_PYTHON else sys.executable
+
+CLI_ENV = os.environ.copy()
+CLI_ENV['PYTHONPATH'] = PYTHONPATH
+CLI_ENV.setdefault('SANDBOX_CONTAINER_IMAGE', 'ubuntu.sandbox')
+CLI_ENV.setdefault('OPENAI_MODEL', 'cogito:14b')
+CLI_ENV.setdefault('OPENAI_API_KEY', 'ollama')
+CLI_ENV.setdefault('OPENAI_API_BASE', 'http://localhost:11434/v1')
 
 
 SANDBOX_CONTAINER_NAME_BASE = "sandbox"
@@ -23,11 +37,41 @@ OPENAI_API_BASE = os.getenv('OPENAI_API_BASE', '')
 def run_cli_prompt(prompt: str) -> str:
     """Run persona CLI with a single prompt and capture the output."""
     result = subprocess.run(
-        ["python3", "-m", "persona.cli"],
+        [PYTHON_EXEC, "-m", "persona.cli"],
         input=f"{prompt}\n/exit\n",
         capture_output=True,
         text=True,
-        timeout=180
+        timeout=180,
+        env=CLI_ENV
+    )
+    return result.stdout + result.stderr
+
+
+def run_cli_non_interactive(prompt: str, args: Optional[List[str]] = None) -> str:
+    """Run persona CLI in non-interactive mode with a single prompt."""
+    cmd = [PYTHON_EXEC, "-m", "persona.cli"]
+    if args:
+        cmd.extend(args)
+    cmd.append(prompt)
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        timeout=180,
+        env=CLI_ENV
+    )
+    return result.stdout + result.stderr
+
+
+def run_cli_with_flag(prompt: str, flag: str) -> str:
+    """Run persona CLI with specific flag and prompt value."""
+    cmd = [PYTHON_EXEC, "-m", "persona.cli", flag, prompt]
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        timeout=180,
+        env=CLI_ENV
     )
     return result.stdout + result.stderr
 
@@ -164,3 +208,43 @@ The response should mention 'skill-creator' as an available skill."""
         output_lower = output.lower()
         found_help = any(word in output_lower for word in ["help", "can", "skill", "capability", "able"])
         assert found_help, f"Output should provide helpful info. Got: {output[:300]}"
+
+
+class TestNonInteractiveMode:
+    """Tests for non-interactive CLI mode."""
+
+    def test_basic_prompt(self):
+        """Verify non-interactive mode works with a basic prompt."""
+        output = run_cli_non_interactive("List files in /var")
+        output_lower = output.lower()
+        found_var = any(word in output_lower for word in ["var", "file", "lib", "run", "tmp"])
+        assert found_var, f"Output should mention /var contents. Got: {output[:300]}"
+
+    def test_mnt_dir_argument(self):
+        """Verify non-interactive mode works with --mnt-dir argument."""
+        output = run_cli_non_interactive("List files in /mnt", args=["--mnt-dir", "."])
+        output_lower = output.lower()
+        found_mnt = any(word in output_lower for word in ["mnt", "file", "dir", "list"])
+        assert found_mnt, f"Output should mention /mnt. Got: {output[:300]}"
+
+    def test_web_search_skill(self):
+        """Verify agent can use web-search skill in non-interactive mode."""
+        output = run_cli_non_interactive("Use web-search skill to search for 'Python tutorial'")
+        output_lower = output.lower()
+        found_web = any(word in output_lower for word in ["web", "search", "python", "tutorial", "skill"])
+        assert found_web, f"Output should mention web search. Got: {output[:300]}"
+
+    def test_no_mnt_flag(self):
+        """Verify non-interactive mode works with --no-mnt flag."""
+        output = run_cli_non_interactive("List files in /tmp", args=["--no-mnt"])
+        output_lower = output.lower()
+        found_tmp = any(word in output_lower for word in ["tmp", "file", "dir"])
+        assert found_tmp, f"Output should mention /tmp. Got: {output[:300]}"
+
+    def test_container_image_flag(self):
+        """Verify non-interactive mode works with --container-image flag."""
+        output = run_cli_non_interactive("Who are you?", args=["--container-image", "ubuntu.sandbox"])
+        output_lower = output.lower()
+        found_agent = any(word in output_lower for word in ["agent", "ai", "help", "assistant"])
+        assert found_agent, f"Output should identify as agent. Got: {output[:300]}"
+

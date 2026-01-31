@@ -407,7 +407,7 @@ async def _main():
     )
     parser.add_argument(
         "-p", "--prompt",
-        dest="prompt",
+        dest="prompt_flag",
         help="Single prompt to execute (non-interactive mode)",
         default=None
     )
@@ -418,6 +418,7 @@ async def _main():
         default=None
     )
     args, remaining = parser.parse_known_args()
+    args.prompt = args.prompt or args.prompt_flag
     
     skills_dir = args.skills_dir if args.skills_dir else str(get_skills_dir())
     
