@@ -3,6 +3,7 @@ import subprocess
 import os
 import sys
 import json
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -20,10 +21,6 @@ PYTHON_EXEC = VENV_PYTHON if USE_VENV_PYTHON else sys.executable
 
 CLI_ENV = os.environ.copy()
 CLI_ENV['PYTHONPATH'] = PYTHONPATH
-CLI_ENV.setdefault('SANDBOX_CONTAINER_IMAGE', 'ubuntu.sandbox')
-CLI_ENV.setdefault('OPENAI_MODEL', 'cogito:14b')
-CLI_ENV.setdefault('OPENAI_API_KEY', 'ollama')
-CLI_ENV.setdefault('OPENAI_API_BASE', 'http://localhost:11434/v1')
 
 
 SANDBOX_CONTAINER_NAME_BASE = "sandbox"
