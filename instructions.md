@@ -21,6 +21,6 @@
   3. lynx
 
 ## Output Constraints
-- DO NOT print huge amounts of text to stdout.
+- DO NOT print huge amounts of data to stdout (cat <huge_file>). Always assess the amount of text first.
 - Summarize, truncate, or save large outputs instead.
 - Always keep outputs aligned with LLM context window limits.
