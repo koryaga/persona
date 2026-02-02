@@ -10,16 +10,7 @@ def get_skills_dir() -> Path:
         meipass = getattr(sys, '_MEIPASS', '')
         return Path(meipass) / 'skills'
     
-    try:
-        pkg_skills = resources.files('persona')
-        if pkg_skills.is_dir():
-            skills_path = pkg_skills / 'skills'
-            if skills_path.is_dir():
-                return Path(str(skills_path))
-    except (TypeError, ModuleNotFoundError, AttributeError, FileNotFoundError):
-        pass
-    
-    return Path(__file__).parent.parent.parent / 'skills'
+    return Path(__file__).parent.parent.parent.parent / 'skills'
 
 
 def get_instructions_path() -> Path:

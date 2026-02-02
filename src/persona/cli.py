@@ -99,7 +99,7 @@ async def _main():
         return False
     
     import atexit
-    atexit.register(lambda: asyncio.run(container_mgr.stop()))
+    atexit.register(lambda: container_mgr.stop())
     
     if args.prompt:
         result = await agent.run(args.prompt)
