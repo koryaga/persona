@@ -70,6 +70,8 @@ persona [--mnt-dir PATH] [--skills-dir PATH]
 persona "single prompt"  # non-interactive mode
 ```
 
+[More scenarios](https://habr.com/ru/articles/989338/)
+
 ### Options
 
 - `--mnt-dir`: Host directory to mount inside sandbox (default: `.`)
