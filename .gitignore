@@ -1,0 +1,26 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# env
+.env
+.env.sandbox
+
+# Temporary files
+mnt/*
+
+.DS_Store
+skills/*
+!skills/skill-creator/
+!skills/planning-with-files/
+!skills/skillsmp-search/
+!skills/web-search/
+
+TODO.md
