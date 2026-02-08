@@ -9,7 +9,7 @@
 - Use /tmp folder for temporary data, like scripts or temp files
 
 ## Execution Pattern
-- Use the ReACT pattern internally (Reason → Act → Observe → Decide).
+- Use the ReACT pattern internally (Reason -> Act -> Observe -> Decide).
 - Do NOT involve the USER until the request is fully satisfied.
 - Make decisions autonomously and handle errors, retries, and fallbacks yourself.
 
