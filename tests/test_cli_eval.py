@@ -12,19 +12,30 @@ from pydantic_evals import Case, Dataset
 from pydantic_evals.evaluators import Contains, Evaluator, EvaluatorContext
 from typing import Dict, Any, Optional, List
 
+from conftest import SANDBOX_CONTAINER_NAME, ensure_container, cleanup_container
+
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC_PATH = os.path.join(PROJECT_ROOT, 'src')
-PYTHONPATH = os.environ.get('PYTHONPATH', '') + f":{SRC_PATH}"
 VENV_PYTHON = os.path.join(PROJECT_ROOT, '.venv', 'bin', 'python')
 USE_VENV_PYTHON = os.path.exists(VENV_PYTHON)
 PYTHON_EXEC = VENV_PYTHON if USE_VENV_PYTHON else sys.executable
 
-CLI_ENV = os.environ.copy()
-CLI_ENV['PYTHONPATH'] = PYTHONPATH
 
+def get_cli_env():
+    """Get environment for CLI subprocess, with .env loaded.
 
-SANDBOX_CONTAINER_NAME_BASE = "sandbox"
-SANDBOX_CONTAINER_NAME = f"{SANDBOX_CONTAINER_NAME_BASE}-{os.getpid()}"
+    Priority: shell env vars > .env files (best practice).
+    """
+    from dotenv import load_dotenv
+    user_config = Path(os.path.expanduser('~/.persona/.env'))
+    if user_config.exists():
+        load_dotenv(user_config, override=False)
+    if Path('.env').exists():
+        load_dotenv('.env', override=False)
+    env = os.environ.copy()
+    env['PYTHONPATH'] = f"{SRC_PATH}:{env.get('PYTHONPATH', '')}"
+    return env
+
 
 OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-4o')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
@@ -39,7 +50,7 @@ def run_cli_prompt(prompt: str) -> str:
         capture_output=True,
         text=True,
         timeout=180,
-        env=CLI_ENV
+        env=get_cli_env()
     )
     return result.stdout + result.stderr
 
@@ -55,7 +66,7 @@ def run_cli_non_interactive(prompt: str, args: Optional[List[str]] = None) -> st
         capture_output=True,
         text=True,
         timeout=180,
-        env=CLI_ENV
+        env=get_cli_env()
     )
     return result.stdout + result.stderr
 
@@ -68,28 +79,23 @@ def run_cli_with_flag(prompt: str, flag: str) -> str:
         capture_output=True,
         text=True,
         timeout=180,
-        env=CLI_ENV
+        env=get_cli_env()
     )
     return result.stdout + result.stderr
 
 
-def is_container_running() -> bool:
-    """Check if this process's sandbox container is already running."""
+def run_interactive_session(inputs: list[str]) -> str:
+    """Run persona CLI with multiple inputs simulating interactive session."""
+    input_str = "\n".join(inputs) + "\n/exit\n"
     result = subprocess.run(
-        ["docker", "ps", "-q", "-f", f"name={SANDBOX_CONTAINER_NAME}"],
+        [PYTHON_EXEC, "-m", "persona.cli"],
+        input=input_str,
         capture_output=True,
         text=True,
-        timeout=10
+        timeout=180,
+        env=get_cli_env()
     )
-    return bool(result.stdout.strip())
-
-
-def ensure_container():
-    """Ensure container is running, create if needed."""
-    if is_container_running():
-        return
-    cmd = ["docker", "run", "-d", "--rm", "--name", SANDBOX_CONTAINER_NAME, "ubuntu.sandbox", "sleep", "infinity"]
-    subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    return result.stdout + result.stderr
 
 
 class LLMJudge(Evaluator[str, str]):
@@ -149,6 +155,7 @@ class TestAgentCLIExpectedOutput:
         """Ensure container is running before each test."""
         ensure_container()
         yield
+        cleanup_container()
 
     def test_file_list_files(self):
         """Verify agent can list files using pydantic-evals Contains."""

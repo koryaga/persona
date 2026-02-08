@@ -30,9 +30,17 @@ def load_config() -> None:
         load_dotenv('.env', override=False)
 
 
-def get_sandbox_env_vars() -> dict[str, str]:
-    """Read allowed environment variables from .env.sandbox file."""
-    sandbox_env = Path(__file__).parent.parent.parent.parent / '.env.sandbox'
+def get_sandbox_env_vars(sandbox_env_path: str | None = None) -> dict[str, str]:
+    """Read allowed environment variables from .env.sandbox file.
+
+    Args:
+        sandbox_env_path: Optional path to .env.sandbox file. If not provided,
+                         defaults to .env.sandbox in project root.
+    """
+    if sandbox_env_path:
+        sandbox_env = Path(sandbox_env_path)
+    else:
+        sandbox_env = Path(__file__).parent.parent.parent.parent / '.env.sandbox'
     if not sandbox_env.exists():
         return {}
 

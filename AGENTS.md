@@ -18,10 +18,12 @@ This is a universal AI agent CLI tool (`persona`) built with Pydantic-AI that su
 - Run with custom skills dir: `persona --skills-dir ./skills`
 - Run without mounting host directory: `persona --no-mnt`
 - Run with custom mount directory: `persona --mnt-dir /path/to/dir`
+- Run single prompt: `persona "Your prompt"` or `persona -p "Your prompt"`
 - Syntax check Python files: `find . -name "*.py" -exec python3 -m py_compile {} \;`
 - Run skill tests: `python3 -m unittest discover -s skills -p "*_test.py" -v`
-- Run E2E tests: `pytest tests/test_cli_eval.py -v`
-- Run specific E2E test: `pytest tests/test_cli_eval.py::TestAgentCLIExpectedOutput::test_skill_creator -v`
+- Run all tests: `pytest tests/ -v`
+- Run E2E CLI tests: `pytest tests/test_cli_eval.py -v`
+- Run conversation history tests: `pytest tests/test_conversation_history.py -v`
 - Enable DEBUG mode: `DEBUG=true persona ...`
 - Add linting: `uv add ruff && ruff check .`
 - Add type checking: `uv add pyright && pyright .`
@@ -41,6 +43,21 @@ Optional: Set `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` for local obse
 ├── src/persona/           # Package source
 │   ├── __init__.py       # Package with version
 │   ├── cli.py            # CLI entry point
+│   ├── agent/            # Agent builder and tools
+│   │   ├── __init__.py
+│   │   ├── builder.py    # create_agent() function
+│   │   └── tools.py      # create_tools() function
+│   ├── config/           # Configuration
+│   │   ├── __init__.py
+│   │   ├── env.py        # Environment handling
+│   │   └── paths.py      # Path resolution
+│   ├── sandbox/          # Docker sandbox management
+│   │   ├── __init__.py
+│   │   ├── container.py  # Container functions
+│   │   └── manager.py    # ContainerManager class
+│   ├── skills/           # Skills
+│   │   ├── __init__.py
+│   │   └── parser.py     # Skill parsing
 │   └── py.typed          # PEP 561 type marker
 ├── pyproject.toml        # Project metadata and dependencies
 ├── AGENTS.md             # This file for agent instructions
@@ -58,9 +75,14 @@ Optional: Set `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` for local obse
 ├── .env.example          # Configuration template
 ├── .env.sandbox.example  # Sandbox environment variables template
 ├── Dockerfile            # Sandbox container definition
-└── tests/                # E2E tests with pydantic-evals
+└── tests/                # Test suite
     ├── conftest.py       # Pytest fixtures
-    └── test_cli_eval.py  # CLI evaluation tests
+    ├── test_cli_eval.py  # CLI E2E tests
+    ├── test_conversation_history.py  # Conversation memory tests
+    ├── test_config_env.py
+    ├── test_config_paths.py
+    ├── test_sandbox_container.py
+    └── test_sandbox_manager.py
 ```
 
 ## Code Style Guidelines

@@ -67,6 +67,7 @@ docker build -t ubuntu.sandbox .
 
 ```bash
 persona [--mnt-dir PATH] [--skills-dir PATH]
+persona "single prompt"  # non-interactive mode
 ```
 
 ### Options
@@ -75,6 +76,7 @@ persona [--mnt-dir PATH] [--skills-dir PATH]
 - `--no-mnt`: Don't mount any host directory at `/mnt`
 - `--skills-dir`: Host directory to mount at `/skills` inside sandbox (default: `skills`)
 - `--container-image`: Docker image to use for sandbox
+- `-p, --prompt`: Single prompt to execute (non-interactive mode)
 
 ### Examples
 
