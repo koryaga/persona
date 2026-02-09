@@ -5,6 +5,30 @@ import subprocess
 from persona.config import env
 
 
+def get_host_timezone() -> str:
+    """Detect host timezone, cross-platform (Linux/macOS/WSL).
+
+    Returns:
+        Timezone string (e.g., 'America/New_York') or 'UTC' as fallback.
+    """
+    if os.environ.get("TZ"):
+        return os.environ["TZ"]
+
+    if os.path.exists("/etc/localtime"):
+        try:
+            tz_path = os.readlink("/etc/localtime")
+            if "zoneinfo" in tz_path:
+                return tz_path.split("zoneinfo/")[-1]
+        except OSError:
+            pass
+
+    if os.path.exists("/etc/timezone"):
+        with open("/etc/timezone") as f:
+            return f.read().strip()
+
+    return "UTC"
+
+
 def start_container(container_name: str, image_name: str, mnt_dir: str, skills_dir: str, env_file: str | None = None, no_mnt: bool = False) -> bool:
     """Start a Docker container with the specified parameters."""
     try:
@@ -15,6 +39,9 @@ def start_container(container_name: str, image_name: str, mnt_dir: str, skills_d
 
         if env_file and os.path.isfile(env_file):
             cmd.extend(["--env-file", env_file])
+
+        cmd.extend(["-v", "/etc/localtime:/etc/localtime:ro"])
+        cmd.extend(["-e", f"TZ={get_host_timezone()}"])
 
         if not no_mnt and os.path.isdir(mnt_dir):
             cmd.extend(["-v", f"{mnt_dir}:/mnt"])

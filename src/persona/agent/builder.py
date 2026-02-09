@@ -44,7 +44,7 @@ def create_agent(skills_dir: Path, model_settings: Optional[dict] = None):
     def get_instructions() -> str:
         return (
             f"{system_prompt}"
-            f"Current date and time: {datetime.datetime.now().isoformat()}"
+            f"Current date and time: {datetime.datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S %Z')}"
             """ When users ask you to perform tasks, check if any of the available skills below can help complete the task more effectively.
 
             How to use skills:

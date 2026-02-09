@@ -106,6 +106,64 @@ class TestStopContainer:
             assert result is False
 
 
+class TestTimezoneMount:
+    """Tests for timezone mounting in container start."""
+
+    def test_timezone_mount_present(self):
+        """Test that /etc/localtime is mounted in container."""
+        with patch('subprocess.run') as mock_run:
+            mock_run.return_value = MagicMock(returncode=0, stdout='abc123\n')
+            container.start_container(
+                container_name='test-container',
+                image_name='ubuntu.sandbox',
+                mnt_dir='/tmp',
+                skills_dir='/Users/skoryaga/src/persona/skills'
+            )
+            call_args = mock_run.call_args
+            docker_args = call_args[0][0]
+            assert '-v' in docker_args
+            assert '/etc/localtime:/etc/localtime:ro' in docker_args
+
+    def test_tz_env_var_present(self):
+        """Test that TZ environment variable is set in container."""
+        with patch('subprocess.run') as mock_run:
+            mock_run.return_value = MagicMock(returncode=0, stdout='abc123\n')
+            container.start_container(
+                container_name='test-container',
+                image_name='ubuntu.sandbox',
+                mnt_dir='/tmp',
+                skills_dir='/Users/skoryaga/src/persona/skills'
+            )
+            call_args = mock_run.call_args
+            docker_args = call_args[0][0]
+            tz_idx = None
+            for i, arg in enumerate(docker_args):
+                if arg == '-e' and i + 1 < len(docker_args):
+                    if docker_args[i + 1].startswith('TZ='):
+                        tz_idx = i + 1
+                        break
+            assert tz_idx is not None, "TZ environment variable not found in docker args"
+
+    def test_get_host_timezone_returns_string(self):
+        """Test that get_host_timezone returns a string."""
+        tz = container.get_host_timezone()
+        assert isinstance(tz, str)
+        assert len(tz) > 0
+
+    def test_tz_override_from_env(self):
+        """Test that TZ environment variable overrides host detection."""
+        original_tz = os.environ.get("TZ")
+        try:
+            os.environ["TZ"] = "Europe/London"
+            tz = container.get_host_timezone()
+            assert tz == "Europe/London"
+        finally:
+            if original_tz:
+                os.environ["TZ"] = original_tz
+            elif "TZ" in os.environ:
+                del os.environ["TZ"]
+
+
 class TestContainerFunctionsExist:
     """Verify container module functions exist."""
 
