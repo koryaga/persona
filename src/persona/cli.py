@@ -59,6 +59,13 @@ async def _main():
         default=None
     )
     parser.add_argument(
+        "--stream",
+        dest="stream",
+        action="store_true",
+        help="Enable streaming output in non-interactive mode",
+        default=False
+    )
+    parser.add_argument(
         "prompt",
         nargs="?",
         help="Single prompt to execute (non-interactive mode)",
@@ -102,8 +109,13 @@ async def _main():
     atexit.register(lambda: container_mgr.stop())
     
     if args.prompt:
-        result = await agent.run(args.prompt)
-        print(result.output)
+        if args.stream:
+            async with agent.run_stream(args.prompt) as response:
+                async for chunk in response.stream_text():
+                    print(chunk, end="", flush=True)
+        else:
+            result = await agent.run(args.prompt)
+            print(result.output)
     else:
         async with agent:
             await agent.to_cli(prog_name="persona")
