@@ -18,9 +18,15 @@ def is_logfire() -> bool:
 def configure_logfire() -> None:
     """Configure logfire for debug mode instrumentation."""
     if is_debug() or is_logfire():
-        logfire.configure(send_to_logfire=is_logfire())
+        if is_logfire():
+            logfire.configure(send_to_logfire='if-token-present')
+        else:
+            logfire.configure(send_to_logfire=False)
+        if not is_debug():
+            logfire.configure(console=False)
         logfire.instrument_pydantic_ai()
         logfire.instrument_httpx(capture_all=True)
+
 
 
 def load_config() -> None:

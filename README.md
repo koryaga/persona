@@ -44,7 +44,7 @@ cp .env.example .env
 | `OPENAI_API_KEY` | API key | `ollama` |
 | `OPENAI_API_BASE` | API base URL | `http://localhost:11434/v1` |
 | `DEBUG` | Show trace in the console | `true OR false` |            
-| `LOGFIRE` | Show trace in the console and post to pydantic logfire (configuration required) | `true OR false` |    
+| `LOGFIRE` | Post to pydantic logfire (token configuration required) | `true OR false` |    
 
 ### Sandbox environment variables
 
