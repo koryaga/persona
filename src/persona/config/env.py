@@ -17,7 +17,7 @@ def is_logfire() -> bool:
 
 def configure_logfire() -> None:
     """Configure logfire for debug mode instrumentation."""
-    if is_debug():
+    if is_debug() or is_logfire():
         logfire.configure(send_to_logfire=is_logfire())
         logfire.instrument_pydantic_ai()
         logfire.instrument_httpx(capture_all=True)
