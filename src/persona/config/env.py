@@ -10,10 +10,15 @@ def is_debug() -> bool:
     return os.getenv('DEBUG', '').lower() in ('true', '1', 'yes')
 
 
+def is_logfire() -> bool:
+    """Check if logfire is enabled via environment variable."""
+    return os.getenv('LOGFIRE', '').lower() in ('true', '1', 'yes')
+
+
 def configure_logfire() -> None:
     """Configure logfire for debug mode instrumentation."""
     if is_debug():
-        logfire.configure(send_to_logfire=False)
+        logfire.configure(send_to_logfire=is_logfire())
         logfire.instrument_pydantic_ai()
         logfire.instrument_httpx(capture_all=True)
 
