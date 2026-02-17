@@ -6,8 +6,12 @@ dist/
 wheels/
 *.egg-info
 
+
 # Virtual environments
 .venv
+
+# mcp configs
+mcp_config.json
 
 # env
 .env
