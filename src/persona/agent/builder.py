@@ -64,17 +64,16 @@ def create_agent(skills_dir: Path, model_settings: Optional[dict] = None):
         )
     
 
-    # Load MCP servers from configuration file
-    
-    mcp_servers = load_mcp_servers('mcp_config.json')
+    # Load MCP servers from configuration file only if MCP_ENABLED is set to true
+    mcp_servers = None
+    if os.getenv('MCP_ENABLED', 'false').lower() == 'true':
+        mcp_servers = load_mcp_servers('mcp_config.json')
     
     agent = Agent(
         model,
         retries=5,
         instructions=get_instructions,
-        toolsets=mcp_servers 
+        toolsets=mcp_servers or []
         )
     
     return agent
-
-        
