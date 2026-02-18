@@ -64,14 +64,17 @@ def create_agent(skills_dir: Path, model_settings: Optional[dict] = None):
         )
     
 
-    # Load all servers from configuration file
+    # Load MCP servers from configuration file
+    
     mcp_servers = load_mcp_servers('mcp_config.json')
-
+    
     agent = Agent(
         model,
         retries=5,
         instructions=get_instructions,
-        toolsets=mcp_servers
-    )
+        toolsets=mcp_servers 
+        )
     
     return agent
+
+        
