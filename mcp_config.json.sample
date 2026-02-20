@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "mcp-gitlab-server": {
+      "command": "npm",
+      "args": ["start", "--silent", "--prefix", "/path/to/mcp-gitlab-server"],
+      "env": {
+        "GITLAB_PERSONAL_ACCESS_TOKEN": "${GITLAB_PERSONAL_ACCESS_TOKEN}",
+        "GITLAB_API_URL": "${GITLAB_API_URL}"
+      }
+    }
+  }
+}

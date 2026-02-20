@@ -7,6 +7,7 @@ from typing import Optional
 from pydantic_ai import Agent, ModelSettings
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
+from pydantic_ai.mcp import load_mcp_servers
 
 from persona.config import paths
 from persona.skills import parser
@@ -27,7 +28,7 @@ def create_agent(skills_dir: Path, model_settings: Optional[dict] = None):
             openai_model,
             provider=OpenAIProvider(
                 base_url=openai_api_base,
-                api_key=openai_api_key,
+                api_key=openai_api_key
             ),
             settings=ModelSettings(**model_settings),
         )
@@ -38,7 +39,7 @@ def create_agent(skills_dir: Path, model_settings: Optional[dict] = None):
                 base_url=openai_api_base,
                 api_key=openai_api_key,
             ),
-            settings=ModelSettings(temperature=0, top_p=0),
+            settings=ModelSettings(temperature=0),
         )
     
     def get_instructions() -> str:
@@ -62,10 +63,20 @@ def create_agent(skills_dir: Path, model_settings: Optional[dict] = None):
             ""
         )
     
+
+    # Load MCP servers from configuration file only if MCP_ENABLED is set to true
+    mcp_servers = None
+    if os.getenv('MCP_ENABLED', 'false').lower() == 'true':
+        mcp_servers = load_mcp_servers('mcp_config.json')
+    
+
+
+
     agent = Agent(
         model,
         retries=5,
         instructions=get_instructions,
-    )
+        toolsets=mcp_servers or []
+        )
     
     return agent
