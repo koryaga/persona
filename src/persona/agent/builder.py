@@ -28,7 +28,7 @@ def create_agent(skills_dir: Path, model_settings: Optional[dict] = None):
             openai_model,
             provider=OpenAIProvider(
                 base_url=openai_api_base,
-                api_key=openai_api_key,
+                api_key=openai_api_key
             ),
             settings=ModelSettings(**model_settings),
         )
@@ -39,7 +39,7 @@ def create_agent(skills_dir: Path, model_settings: Optional[dict] = None):
                 base_url=openai_api_base,
                 api_key=openai_api_key,
             ),
-            settings=ModelSettings(temperature=0, top_p=0),
+            settings=ModelSettings(temperature=0),
         )
     
     def get_instructions() -> str:
