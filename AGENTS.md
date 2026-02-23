@@ -42,11 +42,14 @@ Optional: Set `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` for local obse
 /Users/skoryaga/src/persona
 ├── src/persona/           # Package source
 │   ├── __init__.py       # Package with version
-│   ├── cli.py            # CLI entry point
+│   ├── cli.py            # CLI entry point and argument parsing
+│   ├── repl.py           # Custom REPL loop with streaming and /commands
+│   ├── commands.py       # /command registry (save, load, list, etc.)
+│   ├── session.py        # Session persistence management
 │   ├── agent/            # Agent builder and tools
 │   │   ├── __init__.py
 │   │   ├── builder.py    # create_agent() function
-│   │   └── tools.py      # create_tools() function
+│   │   └── tools.py      # create_tools() function (run_cmd, save_text_file, load_skill)
 │   ├── config/           # Configuration
 │   │   ├── __init__.py
 │   │   ├── env.py        # Environment handling
@@ -84,6 +87,53 @@ Optional: Set `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` for local obse
     ├── test_sandbox_container.py
     └── test_sandbox_manager.py
 ```
+
+## Architecture Overview
+
+### Custom REPL (`repl.py`)
+
+The application uses a custom REPL (Read-Eval-Print Loop) instead of `agent.to_cli()`:
+
+- **`PersonaREPL` class**: Main REPL implementation with:
+  - Session-aware prompt: `persona [session_name] ➤`
+  - Streaming text output with rich markdown rendering
+  - Integration with `/commands` registry
+  - Uses `agent.iter()` for autonomous execution
+  - Handles `PartStartEvent` and `PartDeltaEvent` for complete streaming
+
+- **Autonomous Execution**: Uses `agent.iter()` to:
+  - Stream text responses in real-time via `ModelRequestNode`
+  - Automatically execute tools via `CallToolsNode`
+  - Continue the loop until `End` node (task complete)
+  - No user input needed between tool calls
+
+### Session Management (`session.py`)
+
+- **`SessionManager` class**: Handles conversation persistence:
+  - Auto-saves to platform-specific config directory
+  - JSON serialization with `ModelMessagesTypeAdapter`
+  - Methods: `save_session()`, `load_session()`, `list_sessions()`
+  - Auto-save after each response to 'latest' session
+
+### Commands (`commands.py`)
+
+- **`CommandRegistry` class**: Processes /commands:
+  - `/save [name]` - Save to current or new session name
+  - `/load <name>` - Load session, updates current session name
+  - `/list` - List all saved sessions
+  - `/new` - Clear history, reset to 'latest'
+  - `/clear` - Clear terminal screen
+  - `/help` - Show available commands
+  - `/exit`, `/quit` - Exit CLI
+
+Commands are processed **before** the agent sees them (agent never receives /commands).
+
+### Agent Tools (`agent/tools.py`)
+
+Tools available to the agent:
+- **`run_cmd(cmd)`**: Execute bash commands in Docker sandbox
+- **`save_text_file(path, content)`**: Write files to sandbox with parent dir creation
+- **`load_skill(skill_name)`**: Load skill definitions from `/skills/{skill}/SKILL.md`
 
 ## Code Style Guidelines
 
@@ -134,6 +184,7 @@ Optional: Set `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` for local obse
 - Use custom exception classes for domain-specific errors
 - Never suppress exceptions without explicit logging
 - Clean up resources in finally blocks or use context managers
+- Handle `KeyboardInterrupt` in subprocess operations for user cancellation
 
 ### Async Patterns
 
@@ -143,6 +194,17 @@ Optional: Set `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` for local obse
 - Return results directly; avoid unnecessary wrapping of async calls
 - Use `asyncio.gather()` for concurrent async operations when appropriate
 - Prefer async context managers (`async with`) over sync versions for I/O
+
+### Streaming and UI
+
+- Use `agent.iter()` for autonomous execution with streaming
+- Handle both `PartStartEvent` (initial content) and `PartDeltaEvent` (subsequent chunks)
+- Use `rich.Live` with `Markdown` for real-time formatted output
+- Set `refresh_per_second=20` for smooth streaming
+- Use `prompt_toolkit` for command history and input handling
+- Display spinner while awaiting first token from LLM
+- Handle Ctrl+C gracefully with signal handlers for agent interruption
+- Use custom `InterruptedException` for clean interrupt propagation
 
 ### Docker/Sandbox Integration
 
@@ -168,6 +230,8 @@ Optional: Set `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` for local obse
 - Skills are defined in `skills/{skill_name}/SKILL.md` with YAML frontmatter
 - Skills can include `examples.md` and `reference.md` for detailed documentation
 - Some skills include helper scripts in `scripts/` directory and API references in `references/`
+- Session name is displayed in prompt and updated on `/load` and `/save`
+- Auto-save to 'latest' happens after every agent response
 
 ### General
 

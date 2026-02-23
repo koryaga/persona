@@ -10,6 +10,8 @@ from persona import __version__
 from persona.config import env, paths
 from persona.sandbox import manager
 from persona.agent import builder, tools
+from persona.session import SessionManager
+from persona.repl import PersonaREPL
 
 
 def _signal_handler(signum, frame):
@@ -59,13 +61,6 @@ async def _main():
         default=None
     )
     parser.add_argument(
-        "--stream",
-        dest="stream",
-        action="store_true",
-        help="Enable streaming output in non-interactive mode",
-        default=False
-    )
-    parser.add_argument(
         "prompt",
         nargs="?",
         help="Single prompt to execute (non-interactive mode)",
@@ -108,17 +103,17 @@ async def _main():
     import atexit
     atexit.register(lambda: container_mgr.stop())
     
+    # Initialize session manager for persistence
+    session_manager = SessionManager()
+    
     if args.prompt:
-        if args.stream:
-            async with agent.run_stream(args.prompt) as response:
-                async for chunk in response.stream_text():
-                    print(chunk, end="", flush=True)
-        else:
-            result = await agent.run(args.prompt)
-            print(result.output)
+        # Non-interactive mode: single prompt
+        result = await agent.run(args.prompt)
+        print(result.output)
     else:
-        async with agent:
-            await agent.to_cli(prog_name="persona")
+        # Interactive mode: use custom REPL
+        repl = PersonaREPL(agent, session_manager, prog_name="persona")
+        await repl.run()
     
     return True
 
