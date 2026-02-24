@@ -9,6 +9,7 @@ from typing import Optional
 from prompt_toolkit import PromptSession
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.history import FileHistory
+from prompt_toolkit.key_binding import KeyBindings
 from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
@@ -93,10 +94,17 @@ class PersonaREPL:
         
         history_file = self.session_manager.get_command_history_path(session_name)
         history_file.parent.mkdir(parents=True, exist_ok=True)
-        
+
+        key_bindings = KeyBindings()
+
+        @key_bindings.add('c-z', filter=True)
+        def _(event):
+            event.app.suspend_to_background()
+
         self.prompt_session = PromptSession(
             history=FileHistory(str(history_file)),
             auto_suggest=AutoSuggestFromHistory(),
+            key_bindings=key_bindings,
         )
     
     def switch_command_history(self, session_name: str):
