@@ -45,7 +45,8 @@ class PersonaREPL:
         self,
         agent: Agent,
         session_manager: SessionManager,
-        prog_name: str = "persona"
+        prog_name: str = "persona",
+        mnt_dir: Optional[str] = None
     ):
         """Initialize the REPL.
         
@@ -53,10 +54,12 @@ class PersonaREPL:
             agent: The pydantic-ai agent to use
             session_manager: SessionManager for persistence
             prog_name: Program name for display
+            mnt_dir: Mount directory to display in prompt
         """
         self.agent = agent
         self.session_manager = session_manager
         self.prog_name = prog_name
+        self.mnt_dir = mnt_dir
         self.console = Console()
         
         self.message_history: list[ModelMessage] = []
@@ -172,8 +175,9 @@ class PersonaREPL:
         loop = asyncio.get_event_loop()
         
         def get_prompt():
-            tokens_str = f" [{self.session_usage.total_tokens:,} tokens]" if self.session_usage.total_tokens > 0 else ""
-            return self.prompt_session.prompt(f"{self.prog_name} [{self.current_session}]{tokens_str} ➤ ")
+            tokens_str = f" [{self.session_usage.total_tokens:,} tokens]"
+            mnt_str = f" [{self.mnt_dir}]" if self.mnt_dir else ""
+            return self.prompt_session.prompt(f"{self.prog_name} [{self.current_session}]{tokens_str}{mnt_str} ➤ ")
         
         return await loop.run_in_executor(None, get_prompt)
     

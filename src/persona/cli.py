@@ -106,13 +106,24 @@ async def _main():
     # Initialize session manager for persistence
     session_manager = SessionManager()
     
+    # Determine mount directory display name
+    if args.no_mnt:
+        mnt_display = "NONE"
+    else:
+        abs_path = os.path.abspath(os.path.expanduser(args.mnt_dir))
+        home = os.path.expanduser("~")
+        if abs_path.startswith(home):
+            mnt_display = "~" + abs_path[len(home):]
+        else:
+            mnt_display = abs_path
+    
     if args.prompt:
         # Non-interactive mode: single prompt
         result = await agent.run(args.prompt)
         print(result.output)
     else:
         # Interactive mode: use custom REPL
-        repl = PersonaREPL(agent, session_manager, prog_name="persona")
+        repl = PersonaREPL(agent, session_manager, prog_name="persona", mnt_dir=mnt_display)
         await repl.run()
     
     return True
