@@ -11,11 +11,28 @@ def is_debug() -> bool:
 
 
 def configure_logfire() -> None:
-    """Configure logfire for debug mode instrumentation."""
-    if is_debug():
-        logfire.configure(send_to_logfire=False)
-        logfire.instrument_pydantic_ai()
-        logfire.instrument_httpx(capture_all=True)
+    """Configure logfire for debug mode instrumentation.
+    
+    When OTEL_EXPORTER_OTLP_ENDPOINT is set, exports to that endpoint.
+    Otherwise, disables sending to logfire backend.
+    """
+    if not is_debug():
+        return
+    
+    otlp_endpoint = os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT')
+    
+    config = {
+        'send_to_logfire': False,
+        'service_name': 'persona',
+        'inspect_arguments': False,
+    }
+    
+    if otlp_endpoint:
+        config['environment'] = 'development'
+    
+    logfire.configure(**config)
+    logfire.instrument_pydantic_ai()
+    logfire.instrument_httpx(capture_all=True)
 
 
 def load_config() -> None:

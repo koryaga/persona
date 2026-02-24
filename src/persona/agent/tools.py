@@ -2,6 +2,7 @@
 import os
 import subprocess
 import tempfile
+from pathlib import Path
 
 import aiofiles
 
@@ -17,7 +18,7 @@ def create_tools(container_name: str, skills_dir):
         Args:
             cmd: The bash command to execute (e.g., "ls -la")
         """
-        print(f"\033[38;5;208m[CMD] {cmd}\033[0m")
+
         try:
             result = subprocess.run(
                 ["docker", "exec", container_name, "bash", "-c", cmd],
@@ -35,6 +36,8 @@ def create_tools(container_name: str, skills_dir):
             return "Command timed out"
         except subprocess.SubprocessError as e:
             return f"Error executing command: {str(e)}"
+        except KeyboardInterrupt:
+            return "Command interrupted by user"
         except Exception as e:
             return f"Unexpected error: {str(e)}"
     
@@ -45,8 +48,6 @@ def create_tools(container_name: str, skills_dir):
             path: Absolute path where to write the file (e.g., "/tmp/output.txt")
             file_body: Complete content to write to the file
         """
-        print(f"\033[94m[FILE] {path}\033[0m")
-        
         try:
             with tempfile.NamedTemporaryFile(mode='w', suffix='', delete=False) as tmp:
                 tmp.write(file_body)
@@ -74,8 +75,6 @@ def create_tools(container_name: str, skills_dir):
         Args:
             skill: Name of the skill directory to load (e.g. "web-search", "skill-creator")
         """
-        print(f"\033[93m[SKILL] {skill}\033[0m")
-        
         async with aiofiles.open(skills_dir / skill / "SKILL.md", "r") as f:
             content = await f.read()
             return (
