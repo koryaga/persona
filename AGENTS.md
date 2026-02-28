@@ -12,6 +12,14 @@ This is a universal AI agent CLI tool (`persona`) built with Pydantic-AI that su
 - Remove Python package: `uv remove <package>`
 - Build sandbox image: `docker build -t ubuntu.sandbox .`
 
+### Dependencies
+
+Key dependencies (see `pyproject.toml` for full list):
+- `pydantic-ai>=1.63.0` (updated from 1.33.0)
+- `rich>=13.0.0` (new)
+- `prompt-toolkit>=3.0.0` (new)
+- `platformdirs>=4.0.0` (new)
+
 ## Build/Lint/Test Commands
 
 - Run application: `persona` (after `uv sync && source .venv/bin/activate`)
@@ -19,6 +27,7 @@ This is a universal AI agent CLI tool (`persona`) built with Pydantic-AI that su
 - Run without mounting host directory: `persona --no-mnt`
 - Run with custom mount directory: `persona --mnt-dir /path/to/dir`
 - Run single prompt: `persona "Your prompt"` or `persona -p "Your prompt"`
+- Run with streaming output: `persona --stream -p "Your prompt"`
 - Syntax check Python files: `find . -name "*.py" -exec python3 -m py_compile {} \;`
 - Run skill tests: `python3 -m unittest discover -s skills -p "*_test.py" -v`
 - Run all tests: `pytest tests/ -v`
@@ -34,7 +43,30 @@ When `DEBUG=true`, logfire instruments:
 - Pydantic-AI operations
 - All HTTPX requests (`capture_all=True`)
 
+When `LOGFIRE=true`, logfire sends data to the configured logfire backend (requires token configuration).
+
 Optional: Set `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` for local observability (e.g., Grafana Tempo, Jaeger)
+
+### MCP Configuration
+
+To enable MCP servers:
+
+1. Set `MCP_ENABLED=true` in `.env`
+2. Create `mcp_config.json` with server configuration (see `mcp_config.json.sample`)
+
+Example `mcp_config.json`:
+```json
+{
+  "mcpServers": {
+    "everything": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-everything"]
+    }
+  }
+}
+```
+
+MCP status is displayed in the REPL status bar: "Disabled", "No Config", "No Servers", "Ready (N servers)", or "Error".
 
 ## Project Structure
 
@@ -77,6 +109,7 @@ Optional: Set `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` for local obse
 │   └── .gitignore        # Git ignore for mount directory
 ├── .env.example          # Configuration template
 ├── .env.sandbox.example  # Sandbox environment variables template
+├── mcp_config.json.sample  # MCP server configuration template
 ├── Dockerfile            # Sandbox container definition
 └── tests/                # Test suite
     ├── conftest.py       # Pytest fixtures
@@ -84,6 +117,8 @@ Optional: Set `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` for local obse
     ├── test_conversation_history.py  # Conversation memory tests
     ├── test_config_env.py
     ├── test_config_paths.py
+    ├── test_datetime_formatter.py
+    ├── test_mcp.py
     ├── test_sandbox_container.py
     └── test_sandbox_manager.py
 ```
@@ -205,6 +240,7 @@ Tools available to the agent:
 - Display spinner while awaiting first token from LLM
 - Handle Ctrl+C gracefully with signal handlers for agent interruption
 - Use custom `InterruptedException` for clean interrupt propagation
+- Ctrl+Z suspends REPL to background (resume with `fg`)
 
 ### Docker/Sandbox Integration
 
@@ -218,6 +254,7 @@ Tools available to the agent:
 - Enable DEBUG mode for container lifecycle messages: `DEBUG=true persona ...`
 - Default mount directory is current directory (`.`); use `--no-mnt` to disable mounting
 - Sandbox environment variables can be set in `.env.sandbox` file
+- Host timezone is synced to container via `/etc/localtime` and `TZ` environment variable
 
 ### Project-Specific Patterns
 
