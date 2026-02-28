@@ -87,8 +87,13 @@ class CommandRegistry:
     
     def _cmd_save(self, args: list[str]) -> bool:
         """Save current session."""
-        # Generate timestamp name if no args provided, otherwise use provided name
-        name = args[0] if args else None
+        # Use provided name, or current session, or generate new name
+        if args:
+            name = args[0]
+        elif self.repl.current_session and self.repl.current_session != "latest":
+            name = self.repl.current_session
+        else:
+            name = None
         
         if not self.repl.message_history:
             self.console.print("[yellow]No conversation to save.[/yellow]")

@@ -13,6 +13,34 @@ from persona.config import paths
 from persona.skills import parser
 
 
+def get_model_name() -> str:
+    """Get the configured model name."""
+    return os.getenv('OPENAI_MODEL', 'cogito:14b')
+
+
+def get_mcp_status() -> str:
+    """Get MCP status string based on configuration and environment."""
+    mcp_enabled = os.getenv('MCP_ENABLED', 'false').lower()
+    
+    if mcp_enabled != 'true':
+        return "Disabled"
+    
+    config_path = Path('mcp_config.json')
+    if not config_path.exists():
+        return "No Config"
+    
+    try:
+        import json
+        with open(config_path) as f:
+            config = json.load(f)
+        servers = config.get('mcpServers', {})
+        if not servers:
+            return "No Servers"
+        return f"Ready ({len(servers)} server{'s' if len(servers) > 1 else ''})"
+    except Exception:
+        return "Error"
+
+
 def create_agent(skills_dir: Path, model_settings: Optional[dict] = None):
     """Create and configure the agent."""
     instructions_path = paths.get_instructions_path()

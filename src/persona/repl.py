@@ -47,7 +47,10 @@ class PersonaREPL:
         agent: Agent,
         session_manager: SessionManager,
         prog_name: str = "persona",
-        mnt_dir: Optional[str] = None
+        mnt_dir: Optional[str] = None,
+        skills_dir: Optional[str] = None,
+        mcp_status: Optional[str] = None,
+        model_name: Optional[str] = None
     ):
         """Initialize the REPL.
         
@@ -55,12 +58,18 @@ class PersonaREPL:
             agent: The pydantic-ai agent to use
             session_manager: SessionManager for persistence
             prog_name: Program name for display
-            mnt_dir: Mount directory to display in prompt
+            mnt_dir: Mount directory to display in status bar
+            skills_dir: Skills directory to display in status bar
+            mcp_status: MCP status string to display in status bar
+            model_name: Model name to display in status bar
         """
         self.agent = agent
         self.session_manager = session_manager
         self.prog_name = prog_name
         self.mnt_dir = mnt_dir
+        self.skills_dir = skills_dir
+        self.mcp_status = mcp_status or "Disabled"
+        self.model_name = model_name or "unknown"
         self.console = Console()
         
         self.message_history: list[ModelMessage] = []
@@ -87,6 +96,16 @@ class PersonaREPL:
             PersonaREPL._interrupted = False
             raise InterruptedException()
     
+    def _get_status_bar(self) -> str:
+        """Generate the bottom toolbar status bar content."""
+        tokens_str = f"{self.session_usage.total_tokens:,}" if self.session_usage.total_tokens else "0"
+        mnt_str = self.mnt_dir if self.mnt_dir else "NONE"
+        return f"[{self.current_session}] [{tokens_str} tokens] [{mnt_str}] [{self.skills_dir}] [MCP: {self.mcp_status}] [{self.model_name}]"
+
+    def _print_status_bar(self) -> None:
+        """Print status bar during execution (when toolbar is hidden)."""
+        self.console.print(f"\n{self._get_status_bar()}")
+
     def _setup_prompt_session(self, session_name: Optional[str] = None) -> None:
         """Setup prompt_toolkit session with session-specific file history."""
         if session_name is None:
@@ -105,6 +124,7 @@ class PersonaREPL:
             history=FileHistory(str(history_file)),
             auto_suggest=AutoSuggestFromHistory(),
             key_bindings=key_bindings,
+            bottom_toolbar=self._get_status_bar,
         )
     
     def switch_command_history(self, session_name: str):
@@ -179,13 +199,11 @@ class PersonaREPL:
             signal.signal(signal.SIGINT, original_handler)
     
     async def _get_input(self) -> str:
-        """Get input from user with prompt showing current session and token count."""
+        """Get input from user with simplified prompt."""
         loop = asyncio.get_event_loop()
         
         def get_prompt():
-            tokens_str = f" [{self.session_usage.total_tokens:,} tokens]"
-            mnt_str = f" [{self.mnt_dir}]" if self.mnt_dir else ""
-            return self.prompt_session.prompt(f"{self.prog_name} [{self.current_session}]{tokens_str}{mnt_str} ➤ ")
+            return self.prompt_session.prompt(f"{self.prog_name} > ")
         
         return await loop.run_in_executor(None, get_prompt)
     
@@ -284,6 +302,8 @@ class PersonaREPL:
                 if agent_run.result is not None:
                     self.message_history = agent_run.result.all_messages()
                     self.session_usage = self._get_last_request_usage(self.message_history)
+                    if hasattr(self, 'prompt_session') and self.prompt_session.app:
+                        self.prompt_session.app.invalidate()
         except InterruptedException:
             interrupted = True
         except KeyboardInterrupt:
