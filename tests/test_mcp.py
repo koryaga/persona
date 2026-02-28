@@ -137,7 +137,7 @@ class TestMCPConfiguration:
         with open(mcp_sample) as f:
             config = json.load(f)
         assert 'mcpServers' in config
-        assert 'filesystem' in config['mcpServers']
+        assert 'everything' in config['mcpServers']
 
     def test_mcp_config_sample_has_npx_command(self):
         """Test mcp_config.json.sample uses npx command."""
@@ -146,9 +146,9 @@ class TestMCPConfiguration:
         mcp_sample = project_root / 'mcp_config.json.sample'
         with open(mcp_sample) as f:
             config = json.load(f)
-        filesystem_config = config['mcpServers']['filesystem']
-        assert filesystem_config['command'] == 'npx'
-        assert '@modelcontextprotocol/server-filesystem' in filesystem_config['args']
+        everything_config = config['mcpServers']['everything']
+        assert everything_config['command'] == 'npx'
+        assert '@modelcontextprotocol/server-everything' in everything_config['args']
 
     def test_load_mcp_servers_import(self):
         """Test load_mcp_servers can be imported from pydantic_ai.mcp."""
