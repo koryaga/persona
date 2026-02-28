@@ -33,8 +33,11 @@ persona "your task here"
 
 The REPL provides a rich command-line interface with persistent sessions:
 
-```
-persona [latest] [0 tokens] [/Users/skoryaga/src/persona] [./skills] [MCP: Disabled] [cogito:14b] ➤
+```console
+persona CLI - Type /help for commands, /exit to quit
+persona >
+[latest] [0 tokens] [~/project] [~/skills] [MCP: Disabled] [cogito:14b]
+
 ```
 
 **Slash commands:**
