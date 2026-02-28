@@ -43,6 +43,9 @@ cp .env.example .env
 | `OPENAI_MODEL` | Model to use | `cogito:14b` |
 | `OPENAI_API_KEY` | API key | `ollama` |
 | `OPENAI_API_BASE` | API base URL | `http://localhost:11434/v1` |
+| `DEBUG` | Show trace in the console | `true OR false` |
+| `LOGFIRE` | Post to pydantic logfire (token configuration required) | `true OR false` |
+| `MCP_ENABLED` | Whether to start MCP server configured in mcp_config.json | `true OR false` |
 
 
 ### Sandbox environment variables
