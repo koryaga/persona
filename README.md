@@ -45,17 +45,43 @@ persona [latest] [0 tokens] [/Users/skoryaga/src/persona] [./skills] [MCP: Disab
 | `/load <name>` | Load a saved session |
 | `/list` | List all sessions |
 | `/new` | Start new session |
+| `/clear` | Clear terminal |
 | `/help` | Show commands |
 
-**Keyboard shortcuts:** `Ctrl+C` interrupt agent, `Ctrl+Z` suspend to background
+**Keyboard shortcuts:** `Ctrl+C` interrupt agent, `Ctrl+D` or `/exit` exit, `Ctrl+Z` suspend to background
+
+### Interactive examples
+
+```
+# Ask a question
+persona [latest] ➤ what is the weather today?
+
+# Work with files - your mounted directory is at /mnt
+persona [latest] ➤ read the README.md file from /mnt and summarize it
+
+# Use a skill
+persona [latest] ➤ /load my-project
+persona [my-project] ➤ @web-search find latest AI news
+
+# Save session for later
+persona [latest] ➤ /save my-research
+Session saved: my-research
+
+# Switch between sessions
+persona [latest] ➤ /load my-project
+Loaded session: my-project
+persona [my-project] ➤
+
+# Start fresh
+persona [my-project] ➤ /new
+Started new session.
+persona [latest] ➤
+```
 
 ## Non-Interactive Mode
 
 ```bash
-# Single prompt
 persona "list files in /tmp"
-
-# With streaming output
 persona --stream -p "your prompt"
 ```
 
@@ -115,21 +141,13 @@ More at [Agent Skills Marketplace](https://skillsmp.com/)
 ## Examples
 
 ```bash
-# Interactive mode
+# Interactive mode (most common)
 persona
+persona --mnt-dir ~/projects/myapp
+persona --no-mnt
+persona --skills-dir ./my-skills
 
 # Single prompt
 persona "find all Python files in current directory"
-
-# Stream response
-persona --stream -p "explain what this code does" < code.py
-
-# Custom mount directory
-persona --mnt-dir ~/projects/myapp
-
-# No host directory mount
-persona --no-mnt
-
-# Custom skills
-persona --skills-dir ./my-skills
+persona --stream -p "explain this code" < code.py
 ```
