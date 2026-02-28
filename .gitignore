@@ -12,6 +12,7 @@ wheels/
 # env
 .env
 .env.sandbox
+mcp_config.json
 
 # Temporary files
 mnt/*
