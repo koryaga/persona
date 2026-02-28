@@ -10,29 +10,39 @@ def is_debug() -> bool:
     return os.getenv('DEBUG', '').lower() in ('true', '1', 'yes')
 
 
+def is_logfire() -> bool:
+    """Check if logfire is enabled via environment variable."""
+    return os.getenv('LOGFIRE', '').lower() in ('true', '1', 'yes')
+
+
 def configure_logfire() -> None:
     """Configure logfire for debug mode instrumentation.
-    
+
     When OTEL_EXPORTER_OTLP_ENDPOINT is set, exports to that endpoint.
     Otherwise, disables sending to logfire backend.
     """
-    if not is_debug():
+    if not is_debug() and not is_logfire():
         return
-    
+
     otlp_endpoint = os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT')
-    
+
     config = {
         'send_to_logfire': False,
         'service_name': 'persona',
         'inspect_arguments': False,
     }
-    
+
     if otlp_endpoint:
         config['environment'] = 'development'
-    
+
+    if is_logfire():
+        config['send_to_logfire'] = 'if-token-present'
+
     logfire.configure(**config)
-    logfire.instrument_pydantic_ai()
-    logfire.instrument_httpx(capture_all=True)
+
+    if is_debug() or is_logfire():
+        logfire.instrument_pydantic_ai()
+        logfire.instrument_httpx(capture_all=True)
 
 
 def load_config() -> None:
