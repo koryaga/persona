@@ -33,7 +33,7 @@ def start_container(container_name: str, image_name: str, mnt_dir: str, skills_d
     """Start a Docker container with the specified parameters."""
     try:
         mnt_dir = os.path.abspath(os.path.expanduser(mnt_dir))
-        skills_dir = os.path.abspath(os.path.expanduser(skills_dir))
+        skills_dir = os.path.realpath(os.path.expanduser(skills_dir))
 
         cmd = ["docker", "run", "-d", "--rm"]
 
