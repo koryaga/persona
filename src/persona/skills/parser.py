@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import re
 from pathlib import Path
 
@@ -31,7 +32,12 @@ def parse_skill(file_path: Path, skills_dir: Path):
 def find_and_parse_skills(skills_dir: Path):
     """Find all SKILL.md files and parse them into XML."""
     skills_xml = []
-    skill_files = list(skills_dir.rglob("SKILL.md"))
+    skill_files = []
+    
+    for root, _, files in os.walk(skills_dir, followlinks=True):
+        for file in files:
+            if file == "SKILL.md":
+                skill_files.append(Path(root) / file)
     
     for skill_file in skill_files:
         try:
