@@ -48,26 +48,34 @@ def create_tools(container_name: str, skills_dir):
             path: Absolute path where to write the file (e.g., "/tmp/output.txt")
             file_body: Complete content to write to the file
         """
+        fd = None
+        tmp_path = None
         try:
-            with tempfile.NamedTemporaryFile(mode='w', suffix='', delete=False) as tmp:
+            fd, tmp_path = tempfile.mkstemp()
+            with os.fdopen(fd, 'w') as tmp:
                 tmp.write(file_body)
-                tmp_path = tmp.name
-            
+            fd = None
+
             result = subprocess.run(
                 ["docker", "cp", tmp_path, f"{container_name}:{path}"],
                 capture_output=True,
                 text=True,
                 timeout=10
             )
-            
-            os.unlink(tmp_path)
-            
+
             if result.returncode == 0:
                 return f"Successfully wrote {len(file_body)} bytes to {path}"
             else:
                 return f"Error writing file: {result.stderr}"
+        except subprocess.TimeoutExpired:
+            return "Error writing file: Command timed out"
         except Exception as e:
             return f"Error writing file: {str(e)}"
+        finally:
+            if fd is not None:
+                os.close(fd)
+            if tmp_path is not None and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
     
     async def load_skill(skill: str) -> str:
         """Load a skill definition into the agent's context.

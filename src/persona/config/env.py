@@ -15,6 +15,27 @@ def is_logfire() -> bool:
     return os.getenv('LOGFIRE', '').lower() in ('true', '1', 'yes')
 
 
+def is_session_enabled() -> bool:
+    """Check if session feature is enabled via environment variable."""
+    return os.getenv('SESSION_ENABLED', '').lower() in ('true', '1', 'yes')
+
+
+def is_session_auto_save() -> bool:
+    """Check if session auto-save is enabled via environment variable."""
+    return os.getenv('SESSION_AUTO_SAVE', 'true').lower() not in ('false', '0', 'no')
+
+
+def get_session_dir() -> Path:
+    """Get the session directory path using platform-specific location.
+    
+    Returns:
+        Path to the session directory (e.g., ~/.config/persona/sessions on macOS)
+    """
+    from platformdirs import PlatformDirs
+    dirs = PlatformDirs("persona", appauthor=False)
+    return Path(dirs.user_config_dir) / "sessions"
+
+
 def configure_logfire() -> None:
     """Configure logfire for debug mode instrumentation.
 
