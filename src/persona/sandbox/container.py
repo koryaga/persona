@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import subprocess
+import sys
 
 from persona.config import env
 
@@ -84,7 +85,7 @@ def stop_container(container_name: str) -> bool:
     """Stop a Docker container with the specified name."""
     try:
         result = subprocess.run(
-            ["docker", "ps", "-q", "-f", f"name={container_name}"],
+            ["docker", "ps", "-q", "-f", f"name=^{container_name}$"],
             capture_output=True,
             text=True,
             timeout=10
@@ -103,15 +104,18 @@ def stop_container(container_name: str) -> bool:
                     print(f"Container {container_name} stopped successfully")
                 return True
             else:
+                print(f"Warning: failed to stop container {container_name}", file=sys.stderr)
                 if env.is_debug():
-                    print(f"Failed to stop container {container_name}: {stop_result.stderr}")
+                    print(f"  stderr: {stop_result.stderr}", file=sys.stderr)
                 return False
         else:
             if env.is_debug():
                 print(f"Container {container_name} not found or not running")
             return True
-    
+
     except Exception as e:
+        print(f"Warning: error stopping container {container_name}: {e}", file=sys.stderr)
         if env.is_debug():
-            print(f"Error stopping container: {str(e)}")
+            import traceback
+            traceback.print_exc(file=sys.stderr)
         return False

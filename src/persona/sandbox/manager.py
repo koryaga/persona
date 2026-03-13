@@ -17,6 +17,7 @@ class ContainerManager:
         self.env_vars = env_vars
         self.no_mnt = no_mnt
         self._env_file = None
+        self._stopped = False
 
     def _create_env_file(self) -> str | None:
         """Create temporary env file from env_vars dictionary."""
@@ -58,7 +59,10 @@ class ContainerManager:
         return result
 
     def stop(self) -> bool:
-        """Stop the container and clean up resources."""
+        """Stop the container and clean up resources. Safe to call multiple times."""
+        if self._stopped:
+            return True
+        self._stopped = True
         self._cleanup_env_file()
         return container.stop_container(self.name)
 

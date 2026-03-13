@@ -107,70 +107,73 @@ async def _main():
 
     tool_fns = {"run_cmd": run_cmd, "save_text_file": save_text_file, "load_skill": load_skill}
     
-    if not container_mgr.start():
-        return False
-    
     import atexit
     atexit.register(lambda: container_mgr.stop())
-    
-    # Initialize session manager for persistence
-    session_manager = SessionManager()
-    
-    # Determine mount directory display name
-    if args.no_mnt:
-        mnt_display = "NONE"
-    else:
-        abs_path = os.path.abspath(os.path.expanduser(args.mnt_dir))
+
+    if not container_mgr.start():
+        return False
+
+    try:
+        # Initialize session manager for persistence
+        session_manager = SessionManager()
+
+        # Determine mount directory display name
+        if args.no_mnt:
+            mnt_display = "NONE"
+        else:
+            abs_path = os.path.abspath(os.path.expanduser(args.mnt_dir))
+            home = os.path.expanduser("~")
+            if abs_path.startswith(home):
+                mnt_display = "~" + abs_path[len(home):]
+            else:
+                mnt_display = abs_path
+
+        # Determine skills directory display name
+        abs_skills = os.path.abspath(os.path.expanduser(skills_dir))
         home = os.path.expanduser("~")
-        if abs_path.startswith(home):
-            mnt_display = "~" + abs_path[len(home):]
+        if abs_skills.startswith(home):
+            skills_display = "~" + abs_skills[len(home):]
         else:
-            mnt_display = abs_path
-    
-    # Determine skills directory display name
-    abs_skills = os.path.abspath(os.path.expanduser(skills_dir))
-    home = os.path.expanduser("~")
-    if abs_skills.startswith(home):
-        skills_display = "~" + abs_skills[len(home):]
-    else:
-        skills_display = abs_skills
-    
-    # Get MCP status
-    mcp_status = get_mcp_status()
-    
-    # Get model name
-    model_name = get_model_name()
-    
-    if args.prompt:
-        if args.stream:
-            from pydantic_ai.messages import PartDeltaEvent, PartStartEvent, TextPart, TextPartDelta
-            async with agent.iter(args.prompt) as agent_run:
-                async for node in agent_run:
-                    if agent.is_model_request_node(node):
-                        async with node.stream(agent_run.ctx) as stream:
-                            async for event in stream:
-                                if isinstance(event, PartStartEvent) and isinstance(event.part, TextPart):
-                                    print(event.part.content, end="", flush=True)
-                                elif isinstance(event, PartDeltaEvent) and isinstance(event.delta, TextPartDelta):
-                                    print(event.delta.content_delta, end="", flush=True)
-            print()
+            skills_display = abs_skills
+
+        # Get MCP status
+        mcp_status = get_mcp_status()
+
+        # Get model name
+        model_name = get_model_name()
+
+        if args.prompt:
+            if args.stream:
+                from pydantic_ai.messages import PartDeltaEvent, PartStartEvent, TextPart, TextPartDelta
+                async with agent.iter(args.prompt) as agent_run:
+                    async for node in agent_run:
+                        if agent.is_model_request_node(node):
+                            async with node.stream(agent_run.ctx) as stream:
+                                async for event in stream:
+                                    if isinstance(event, PartStartEvent) and isinstance(event.part, TextPart):
+                                        print(event.part.content, end="", flush=True)
+                                    elif isinstance(event, PartDeltaEvent) and isinstance(event.delta, TextPartDelta):
+                                        print(event.delta.content_delta, end="", flush=True)
+                print()
+            else:
+                result = await agent.run(args.prompt)
+                print(result.output)
         else:
-            result = await agent.run(args.prompt)
-            print(result.output)
-    else:
-        # Interactive mode: use custom REPL
-        repl = PersonaREPL(
-            agent,
-            session_manager,
-            prog_name="persona",
-            mnt_dir=mnt_display,
-            skills_dir=skills_display,
-            mcp_status=mcp_status,
-            model_name=model_name,
-            tool_fns=tool_fns,
-        )
-        await repl.run()
-    
+            # Interactive mode: use custom REPL
+            repl = PersonaREPL(
+                agent,
+                session_manager,
+                prog_name="persona",
+                mnt_dir=mnt_display,
+                skills_dir=skills_display,
+                mcp_status=mcp_status,
+                model_name=model_name,
+                tool_fns=tool_fns,
+            )
+            await repl.run()
+    finally:
+        container_mgr.stop()
+
     return True
 
 
